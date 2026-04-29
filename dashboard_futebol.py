@@ -18,7 +18,7 @@ st.set_page_config(
 def carregar_dados():
     try:
         # Lê o arquivo CSV atualizado com colunas SAF e valores NA
-        df = pd.read_csv('dados/dados_tcc.csv')
+        df = pd.read_csv('dados_tcc.csv')
         
         # Renomeia para exibição amigável no Dashboard
         df = df.rename(columns={
