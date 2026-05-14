@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SoccerFinance · Sistema de Gestão</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --green:   #1D9E75;
+  --green-d: #085041;
+  --green-l: #E1F5EE;
+  --green-m: #9FE1CB;
+  --gray:    #5F5E5A;
+  --gray-l:  #F1EFE8;
+  --gray-b:  #D3D1C7;
+  --text:    #2C2C2A;
+  --text-2:  #5F5E5A;
+  --bg:      #FAFAF8;
+  --card:    #FFFFFF;
+  --border:  #E8E6DF;
+  --danger:  #A32D2D;
+  --danger-l:#FCEBEB;
+  --amber:   #BA7517;
+  --amber-l: #FAEEDA;
+  --blue:    #185FA5;
+  --blue-l:  #E6F1FB;
+  --r:       8px;
+  --r-lg:    14px;
+  --shadow:  0 1px 3px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.04);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+h1,h2,h3,h4{font-family:'Syne',sans-serif}
+
+/* ── LOGIN ── */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--green-d);position:relative;overflow:hidden}
+#login-screen::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(255,255,255,.03) 40px),repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(255,255,255,.03) 40px)}
+.login-card{background:var(--card);border-radius:20px;padding:48px 40px;width:420px;box-shadow:0 24px 64px rgba(0,0,0,.25);position:relative;z-index:1}
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:36px}
+.login-logo-icon{width:40px;height:40px;background:var(--green);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-family:'DM Mono',monospace;font-size:18px;font-weight:500}
+.login-logo-text{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.5px}
+.login-logo-text span{color:var(--green)}
+.login-title{font-size:26px;font-weight:700;margin-bottom:6px}
+.login-sub{color:var(--text-2);font-size:13px;margin-bottom:28px}
+.field-group{margin-bottom:18px}
+.field-group label{display:block;font-size:12px;font-weight:500;color:var(--text-2);margin-bottom:6px;letter-spacing:.04em;text-transform:uppercase}
+.field-group input,
+.field-group select{width:100%;padding:11px 14px;border:1px solid var(--border);border-radius:var(--r);font-size:14px;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);outline:none;transition:border .15s}
+.field-group input:focus,
+.field-group select:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(29,158,117,.1)}
+.btn-primary{width:100%;padding:13px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-family:'Syne',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:background .15s,transform .1s;letter-spacing:.02em}
+.btn-primary:hover{background:var(--green-d)}
+.btn-primary:active{transform:scale(.98)}
+.login-demo{margin-top:20px;padding:14px;background:var(--gray-l);border-radius:var(--r);font-size:12px;color:var(--text-2);line-height:1.6}
+.login-demo strong{color:var(--text);display:block;margin-bottom:4px}
+.login-demo code{background:var(--border);padding:1px 5px;border-radius:4px;font-family:'DM Mono',monospace;font-size:11px}
+
+/* ── SHELL ── */
+#app{display:none;min-height:100vh;flex-direction:column}
+.topbar{height:56px;background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px;position:sticky;top:0;z-index:100}
+.topbar-logo{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--text);letter-spacing:-.3px;margin-right:auto}
+.topbar-logo span{color:var(--green)}
+.badge-role{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase}
+.badge-admin{background:var(--green-d);color:var(--green-m)}
+.badge-consultor{background:var(--blue-l);color:var(--blue)}
+.badge-gestor{background:var(--amber-l);color:var(--amber)}
+.topbar-user{font-size:13px;color:var(--text-2)}
+.topbar-user strong{color:var(--text)}
+.btn-logout{padding:7px 14px;border:1px solid var(--border);border-radius:var(--r);background:none;font-size:13px;cursor:pointer;color:var(--text-2);transition:all .15s}
+.btn-logout:hover{border-color:var(--danger);color:var(--danger)}
+
+/* ── NAV ── */
+.layout{display:flex;flex:1}
+.sidebar{width:220px;background:var(--card);border-right:1px solid var(--border);padding:16px 12px;flex-shrink:0;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto}
+.nav-section{font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--text-2);padding:10px 8px 4px;margin-top:8px}
+.nav-section:first-child{margin-top:0}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r);cursor:pointer;font-size:13px;color:var(--text-2);transition:all .12s;margin-bottom:2px;user-select:none}
+.nav-item:hover{background:var(--gray-l);color:var(--text)}
+.nav-item.active{background:var(--green-l);color:var(--green-d);font-weight:500}
+.nav-icon{width:18px;height:18px;opacity:.7;flex-shrink:0}
+.nav-item.active .nav-icon{opacity:1}
+
+/* ── CONTENT ── */
+.content{flex:1;padding:28px;overflow:auto}
+.page{display:none}
+.page.active{display:block}
+.page-header{margin-bottom:24px}
+.page-header h2{font-size:22px;font-weight:700;margin-bottom:4px}
+.page-header p{color:var(--text-2);font-size:13px}
+
+/* ── KPI GRID ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px}
+.kpi-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px;box-shadow:var(--shadow)}
+.kpi-label{font-size:11px;font-weight:500;color:var(--text-2);letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px}
+.kpi-value{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;color:var(--text);line-height:1}
+.kpi-sub{font-size:11px;color:var(--text-2);margin-top:4px}
+.kpi-card.accent{border-color:var(--green);border-left:3px solid var(--green)}
+.kpi-card.accent .kpi-value{color:var(--green-d)}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow)}
+.card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-header h3{font-size:14px;font-weight:600;color:var(--text)}
+.card-body{padding:20px}
+.card-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+@media(max-width:900px){.card-grid-2{grid-template-columns:1fr}}
+
+/* ── TABLE ── */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{text-align:left;padding:10px 14px;font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:var(--text-2);border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0}
+tbody td{padding:11px 14px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--gray-l)}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
+.badge-saf{background:var(--green-l);color:var(--green-d)}
+.badge-nassoc{background:var(--gray-l);color:var(--gray)}
+.badge-pos{background:var(--amber-l);color:var(--amber);font-family:'DM Mono',monospace;font-weight:500}
+.btn-sm{padding:5px 10px;border-radius:6px;font-size:12px;cursor:pointer;border:1px solid var(--border);background:none;color:var(--text-2);transition:all .12s;font-family:'DM Sans',sans-serif}
+.btn-sm:hover{background:var(--gray-l)}
+.btn-sm.danger:hover{background:var(--danger-l);border-color:var(--danger);color:var(--danger)}
+.btn-sm.primary{background:var(--green);border-color:var(--green);color:#fff}
+.btn-sm.primary:hover{background:var(--green-d)}
+
+/* ── FORM ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-group{margin-bottom:0}
+.form-group label{display:block;font-size:11px;font-weight:500;color:var(--text-2);letter-spacing:.04em;text-transform:uppercase;margin-bottom:5px}
+.form-group input,
+.form-group select{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);outline:none;transition:border .15s}
+.form-group input:focus,
+.form-group select:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(29,158,117,.1)}
+.form-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
+
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--card);border-radius:var(--r-lg);width:560px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.25)}
+.modal-header{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-header h3{font-size:16px;font-weight:700}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-2);line-height:1;padding:2px 6px;border-radius:4px}
+.modal-close:hover{background:var(--gray-l)}
+.modal-body{padding:24px}
+
+/* ── LOG ── */
+.log-entry{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);align-items:flex-start}
+.log-entry:last-child{border-bottom:none}
+.log-dot{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.log-dot.create{background:var(--green)}
+.log-dot.update{background:var(--amber)}
+.log-dot.delete{background:var(--danger)}
+.log-dot.login{background:var(--blue)}
+.log-time{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-2);white-space:nowrap;min-width:130px}
+.log-msg{font-size:13px;color:var(--text)}
+.log-user{font-size:11px;color:var(--text-2);margin-top:1px}
+
+/* ── CHARTS ── */
+.chart-container{position:relative;height:280px}
+
+/* ── EMBED ── */
+.embed-frame{background:var(--gray-l);border-radius:var(--r-lg);border:1px solid var(--border);padding:0;overflow:hidden}
+.embed-topbar{background:var(--green-d);padding:10px 16px;display:flex;align-items:center;gap:8px}
+.embed-dots{display:flex;gap:5px}
+.embed-dot{width:10px;height:10px;border-radius:50%}
+.embed-title{color:rgba(255,255,255,.7);font-size:12px;font-family:'DM Mono',monospace;margin-left:8px}
+.embed-body{background:#0E1117;min-height:480px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:32px}
+.embed-body p{color:rgba(255,255,255,.5);font-size:13px;text-align:center;max-width:380px;line-height:1.6}
+.embed-cmd{font-family:'DM Mono',monospace;font-size:12px;background:rgba(255,255,255,.07);color:#9FE1CB;padding:10px 18px;border-radius:8px;letter-spacing:.03em}
+
+/* ── SEARCH ── */
+.filters-row{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:center}
+.filters-row input,
+.filters-row select{padding:8px 12px;border:1px solid var(--border);border-radius:var(--r);font-size:13px;font-family:'DM Sans',sans-serif;background:var(--card);color:var(--text);outline:none}
+.filters-row input{min-width:200px}
+.filters-row input:focus,
+.filters-row select:focus{border-color:var(--green)}
+.results-count{margin-left:auto;font-size:12px;color:var(--text-2)}
+
+/* ── ALERT ── */
+.alert{padding:12px 16px;border-radius:var(--r);font-size:13px;margin-bottom:16px;display:none}
+.alert.show{display:block}
+.alert.success{background:var(--green-l);color:var(--green-d);border:1px solid var(--green-m)}
+.alert.error{background:var(--danger-l);color:var(--danger);border:1px solid #F7C1C1}
+
+/* ── STAT COMPARE ── */
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.compare-card{border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px}
+.compare-label{font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px}
+.compare-item{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)}
+.compare-item:last-child{border-bottom:none}
+.compare-item-label{font-size:13px;color:var(--text-2)}
+.compare-item-val{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:var(--text)}
+
+/* Spearman table */
+.spearman-table{width:100%;border-collapse:collapse;font-size:13px}
+.spearman-table td,.spearman-table th{padding:10px 14px;border-bottom:1px solid var(--border)}
+.spearman-table th{background:var(--bg);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--text-2);font-weight:500}
+.r-bar-wrap{display:flex;align-items:center;gap:8px}
+.r-bar{height:8px;border-radius:4px;background:var(--green);flex-shrink:0}
+.r-val{font-family:'DM Mono',monospace;font-weight:500;color:var(--green-d)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .sidebar{display:none}
+  .form-grid{grid-template-columns:1fr}
+  .card-grid-2{grid-template-columns:1fr}
+  .compare-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════ LOGIN ══════════════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">SF</div>
+      <div class="login-logo-text">Soccer<span>Finance</span></div>
+    </div>
+    <h2 class="login-title">Bem-vindo de volta</h2>
+    <p class="login-sub">Sistema de gestão e análise financeira · Brasileirão 2020–2024</p>
+    <div class="field-group">
+      <label>E-mail</label>
+      <input type="email" id="login-email" placeholder="email@clube.com.br" value="admin@soccerfinance.com">
+    </div>
+    <div class="field-group">
+      <label>Senha</label>
+      <input type="password" id="login-pass" placeholder="••••••••" value="admin123">
+    </div>
+    <div class="field-group">
+      <label>Perfil de acesso</label>
+      <select id="login-role">
+        <option value="admin">Administrador</option>
+        <option value="consultor">Consultor</option>
+        <option value="gestor">Gestor de Clube</option>
+      </select>
+    </div>
+    <div id="login-error" class="alert error">Credenciais inválidas. Tente novamente.</div>
+    <button class="btn-primary" onclick="doLogin()">Acessar sistema</button>
+    <div class="login-demo">
+      <strong>Contas de demonstração</strong>
+      Admin — <code>admin@soccerfinance.com</code> / <code>admin123</code><br>
+      Consultor — <code>consultor@soccerfinance.com</code> / <code>cons123</code><br>
+      Gestor — <code>gestor@flamengo.com</code> / <code>gest123</code>
+      Gestor (Palmeiras) — <code>gestor@palmeiras.com.br</code> / <code>palmeiras123</code><br>
+      Gestor (Cuiabá) — <code>gestor@cuiaba.com.br</code> / <code>cuiaba123</code><br>
+      Gestor (Bragantino) — <code>gestor@bragantino.com.br</code> / <code>braga123</code><br>
+      Gestor (Fortaleza) — <code>gestor@fortaleza.com.br</code> / <code>leao123</code>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ APP ══════════════════════ -->
+<div id="app">
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-logo">Soccer<span>Finance</span></div>
+    <div class="topbar-user">Olá, <strong id="topbar-name">–</strong></div>
+    <div id="topbar-badge" class="badge-role"></div>
+    <button class="btn-logout" onclick="doLogout()">Sair</button>
+  </div>
+
+  <div class="layout">
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar"></nav>
+
+    <!-- Main -->
+    <main class="content">
+      <div id="alert-global" class="alert"></div>
+
+      <!-- ── INTRODUÇÃO ── -->
+      <div id="page-introducao" class="page">
+        <div class="page-header">
+          <h2>Introdução ao Sistema</h2>
+          <p>Apresentação, contexto e acesso ao dashboard analítico · SoccerFinance</p>
+        </div>
+
+        <!-- Cards de importância -->
+        <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-bottom:24px">
+          <div class="kpi-card accent">
+            <div class="kpi-label">Período analisado</div>
+            <div class="kpi-value">5 anos</div>
+            <div class="kpi-sub">Brasileirão Série A 2020–2024</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Método estatístico</div>
+            <div class="kpi-value" style="font-size:18px">Spearman</div>
+            <div class="kpi-sub">Correlação de ranking não-paramétrica</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Hipótese central</div>
+            <div class="kpi-value" style="font-size:16px">Finanças ↔ Desempenho</div>
+            <div class="kpi-sub">Existe relação significativa?</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Variável dependente</div>
+            <div class="kpi-value" style="font-size:18px">Pontuação</div>
+            <div class="kpi-sub">Pontos conquistados na temporada</div>
+          </div>
+        </div>
+
+        <div class="card-grid-2" style="margin-bottom:18px">
+          <!-- Sobre o sistema -->
+          <div class="card">
+            <div class="card-header"><h3>Sobre o SoccerFinance</h3></div>
+            <div class="card-body" style="line-height:1.8;font-size:13px;color:var(--text-2)">
+              <p style="margin-bottom:12px">SoccerFinance é uma plataforma de gestão e análise financeira</p>
+              <p style="margin-bottom:12px">O sistema integra dados esportivos e financeiros dos clubes do Campeonato Brasileiro Série A entre 2020 e 2024, permitindo explorar a relação entre indicadores financeiros e performance em campo.</p>
+              <p>As variáveis analisadas incluem folha salarial, receita total, valor de mercado e gastos com transferências, correlacionadas com a pontuação final de cada clube em cada temporada.</p>
+            </div>
+          </div>
+
+          <!-- Importância e objetivos -->
+          <div class="card">
+            <div class="card-header"><h3>Importância e Objetivos</h3></div>
+            <div class="card-body" style="font-size:13px;color:var(--text-2)">
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <div style="display:flex;gap:12px;align-items:flex-start">
+                  <div style="width:28px;height:28px;border-radius:8px;background:var(--green-l);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--green-d);font-size:14px">①</div>
+                  <div>Transparência financeira<br>Evidenciar como investimentos impactam diretamente o desempenho esportivo, embasando decisões de gestão.</div>
+                </div>
+                <div style="display:flex;gap:12px;align-items:flex-start">
+                  <div style="width:28px;height:28px;border-radius:8px;background:var(--blue-l);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--blue);font-size:14px">②</div>
+                  <div>Análise comparativa SAF vs. Associação<br>Avaliar se a conversão para SAF influencia a eficiência e competitividade dos clubes.</div>
+                </div>
+                <div style="display:flex;gap:12px;align-items:flex-start">
+                  <div style="width:28px;height:28px;border-radius:8px;background:var(--amber-l);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--amber);font-size:14px">③</div>
+                  <div>Suporte à tomada de decisão<br>Fornecer relatórios e rankings que auxiliem gestores e consultores a identificar oportunidades e riscos.</div>
+                </div>
+                <div style="display:flex;gap:12px;align-items:flex-start">
+                  <div style="width:28px;height:28px;border-radius:8px;background:var(--danger-l);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--danger);font-size:14px">④</div>
+                  <div>Eficiência de investimento<br>Calcular o custo por ponto conquistado para identificar os clubes que melhor convertem recursos em resultados.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Streamlit embed -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Dashboard analítico · Streamlit</h3>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input id="intro-streamlit-url" type="text" placeholder="http://localhost:8501" style="width:240px;padding:7px 11px;border:1px solid var(--border);border-radius:var(--r);font-size:12px;font-family:'DM Mono',monospace;background:var(--bg);color:var(--text);outline:none">
+              <button class="btn-sm primary" onclick="loadIntroStreamlit()">Carregar</button>
+              <button class="btn-sm" onclick="unloadIntroStreamlit()">Limpar</button>
+            </div>
+          </div>
+          <div class="embed-frame">
+            <div class="embed-topbar">
+              <div class="embed-dots">
+                <div class="embed-dot" style="background:#FF5F57"></div>
+                <div class="embed-dot" style="background:#FFBD2E"></div>
+                <div class="embed-dot" style="background:#28C840"></div>
+              </div>
+              <span class="embed-title" id="intro-embed-url-label">aguardando URL · dashboard_futebol.py</span>
+            </div>
+            <div id="intro-embed-placeholder" class="embed-body">
+              <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="12" fill="#1D9E75"/><path d="M14 34L24 14L34 34" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 28H31" stroke="white" stroke-width="3" stroke-linecap="round"/></svg>
+              <p>Inicie o servidor Streamlit e cole a URL acima para visualizar o dashboard interativo aqui.</p>
+              <div class="embed-cmd">streamlit run dashboard_futebol.py</div>
+              <p style="font-size:11px;color:rgba(255,255,255,.4)">O Streamlit precisa estar rodando com<br><code style="font-family:'DM Mono',monospace">--server.enableCORS false --server.enableXsrfProtection false</code></p>
+            </div>
+            <iframe id="intro-streamlit-frame" style="display:none;width:100%;height:740px;border:none"></iframe>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── DASHBOARD (mantido para gestor se necessário) ── -->
+      <div id="page-dashboard" class="page">
+        <div class="page-header">
+          <h2>Visão geral</h2>
+          <p>Resumo executivo da base · Campeonato Brasileiro 2020–2024</p>
+        </div>
+        <div class="kpi-grid" id="kpi-row"></div>
+        <div class="card-grid-2">
+          <div class="card">
+            <div class="card-header"><h3>Correlação de Spearman</h3></div>
+            <div class="card-body">
+              <table class="spearman-table">
+                <thead><tr><th>Métrica</th><th>R</th><th>Força</th><th>p-value</th></tr></thead>
+                <tbody id="spearman-rows"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Pontos médios por ano</h3></div>
+            <div class="card-body"><div class="chart-container"><canvas id="chart-anos"></canvas></div></div>
+          </div>
+        </div>
+        <div class="card-grid-2">
+          <div class="card">
+            <div class="card-header"><h3>SAF vs. Associação — pontos médios</h3></div>
+            <div class="card-body"><div class="chart-container"><canvas id="chart-saf"></canvas></div></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Dispersão · Folha × Pontos</h3></div>
+            <div class="card-body"><div class="chart-container"><canvas id="chart-scatter"></canvas></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── DADOS (CRUD) ── -->
+      <div id="page-dados" class="page">
+        <div class="page-header">
+          <h2>Base de dados</h2>
+          <p>CRUD de registros financeiros e esportivos</p>
+        </div>
+        <div class="filters-row">
+          <input type="text" id="search-clube" placeholder="Buscar clube..." oninput="renderTable()">
+          <select id="filter-ano" onchange="renderTable()"><option value="">Todos os anos</option></select>
+          <select id="filter-saf" onchange="renderTable()"><option value="">SAF + Assoc.</option><option value="Sim">SAF</option><option value="Não">Associação</option></select>
+          <span class="results-count" id="table-count"></span>
+          <button class="btn-sm primary" id="btn-add" onclick="openModal()">+ Novo registro</button>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Clube</th><th>Ano</th><th>Pos.</th><th>Pontos</th>
+                  <th>Receita (R$mi)</th><th>Folha (R$mi)</th><th>Mercado (R$mi)</th><th>Transf. (R$mi)</th>
+                  <th>SAF</th><th id="actions-header">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="data-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ANÁLISE (Consultor) ── -->
+      <div id="page-analise" class="page">
+        <div class="page-header">
+          <h2>Análise de correlação</h2>
+          <p>Visualizações e insights estatísticos para o TCC</p>
+        </div>
+        <div class="filters-row">
+          <select id="analise-ano" onchange="renderAnalise()"><option value="">Todos os anos</option></select>
+          <select id="analise-saf" onchange="renderAnalise()"><option value="">SAF + Assoc.</option><option value="Sim">SAF</option><option value="Não">Associação</option></select>
+        </div>
+        <div class="compare-grid">
+          <div class="compare-card">
+            <div class="compare-label" style="color:var(--green-d)">SAF</div>
+            <div id="saf-stats"></div>
+          </div>
+          <div class="compare-card">
+            <div class="compare-label" style="color:var(--gray)">Associação Civil</div>
+            <div id="assoc-stats"></div>
+          </div>
+        </div>
+        <div class="card-grid-2">
+          <div class="card">
+            <div class="card-header"><h3>Receita × Pontos</h3></div>
+            <div class="card-body"><div class="chart-container"><canvas id="a-scatter1"></canvas></div></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Valor de mercado × Pontos</h3></div>
+            <div class="card-body"><div class="chart-container"><canvas id="a-scatter2"></canvas></div></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Folha salarial × Pontos</h3></div>
+            <div class="card-body"><div class="chart-container"><canvas id="a-scatter3"></canvas></div></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Transferências × Pontos</h3></div>
+            <div class="card-body"><div class="chart-container"><canvas id="a-scatter4"></canvas></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── MEU CLUBE (Gestor) ── -->
+      <div id="page-clube" class="page">
+        <div class="page-header">
+          <h2 id="clube-page-title">Meu clube</h2>
+          <p>Histórico financeiro e esportivo 2020–2024</p>
+        </div>
+        <div class="kpi-grid" id="clube-kpis"></div>
+        <div class="card-grid-2">
+          <div class="card">
+            <div class="card-header"><h3>Evolução de pontos</h3></div>
+            <div class="card-body"><div class="chart-container"><canvas id="clube-pontos"></canvas></div></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>Receita × Folha salarial</h3></div>
+            <div class="card-body"><div class="chart-container"><canvas id="clube-financas"></canvas></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Histórico completo</h3></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Ano</th><th>Pos.</th><th>Pontos</th><th>Receita</th><th>Folha</th><th>Mercado</th><th>Transf.</th></tr></thead>
+            <tbody id="clube-table"></tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- ── RELATÓRIO DO CLUBE ── -->
+      <div id="page-relatorio" class="page">
+        <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <h2 id="rel-title">Relatório do clube</h2>
+            <p>Relatório executivo gerado automaticamente · SoccerFinance</p>
+          </div>
+          <button class="btn-sm primary" onclick="printRelatorio()" style="padding:9px 18px;font-size:13px">Imprimir / Salvar PDF</button>
+        </div>
+        <div id="relatorio-content">
+        
+        </div>
+      </div>
+
+      <!-- ── EFETIVIDADE ── -->
+      <div id="page-efetividade" class="page">
+        <div class="page-header">
+          <h2>Efetividade financeira</h2>
+          <p>Custo por ponto conquistado · quanto cada clube gastou para cada ponto no Brasileirão</p>
+        </div>
+        <div class="filters-row">
+          <select id="ef-ano" onchange="renderEfetividade()"><option value="">Todos os anos</option></select>
+          <select id="ef-metrica" onchange="renderEfetividade()">
+            <option value="Folha_Salarial_Mi">Folha salarial</option>
+            <option value="Receita_Total_Mi">Receita total</option>
+            <option value="Gastos_Transferencias_Mi">Gastos c/ transferências</option>
+          </select>
+          <select id="ef-saf" onchange="renderEfetividade()"><option value="">SAF + Assoc.</option><option value="Sim">SAF</option><option value="Não">Associação</option></select>
+        </div>
+        <div class="kpi-grid" id="ef-kpis"></div>
+        <div class="card-grid-2" style="margin-bottom:18px">
+          <div class="card">
+            <div class="card-header"><h3 id="ef-bar-title">Custo por ponto (R$ mi/pt) — ranking</h3></div>
+            <div class="card-body"><div class="chart-container" style="height:340px"><canvas id="ef-bar"></canvas></div></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3 id="ef-overlap-title">% de clubes Top 10 na métrica que também são Top 10 no campeonato</h3></div>
+            <div class="card-body"><div class="chart-container" style="height:340px"><canvas id="ef-overlap"></canvas></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3>Ranking completo de efetividade</h3></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Clube</th><th>Ano</th><th>Pontos</th><th>Métrica (R$mi)</th><th>Custo/Ponto (R$mi)</th><th>Efetividade</th><th>SAF</th></tr></thead>
+              <tbody id="ef-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── LOGS ── -->
+      <div id="page-logs" class="page">
+        <div class="page-header">
+          <h2>Log de auditoria</h2>
+          <p>Registro completo de ações do sistema</p>
+        </div>
+        <div class="filters-row">
+          <select id="log-filter-type" onchange="renderLogs()">
+            <option value="">Todos os tipos</option>
+            <option value="login">Login</option>
+            <option value="create">Criação</option>
+            <option value="update">Edição</option>
+            <option value="delete">Exclusão</option>
+          </select>
+          <select id="log-filter-user" onchange="renderLogs()">
+            <option value="">Todos os usuários</option>
+          </select>
+          <button class="btn-sm danger" onclick="if(confirm('Limpar logs?')){LOGS=[];renderLogs()}">Limpar logs</button>
+        </div>
+        <div class="card">
+          <div class="card-body" id="log-list" style="max-height:560px;overflow-y:auto"></div>
+        </div>
+      </div>
+
+      <!-- ── ADMIN ── -->
+      <div id="page-admin" class="page">
+        <div class="page-header">
+          <h2>Painel de administração</h2>
+          <p>Gerenciamento de usuários e acesso ao dashboard Streamlit</p>
+        </div>
+        <div class="card-grid-2">
+          <!-- Gestão de usuários -->
+          <div class="card">
+            <div class="card-header">
+              <h3>Usuários do sistema</h3>
+              <button class="btn-sm primary" onclick="openUserModal()">+ Novo</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Clube</th><th></th></tr></thead>
+                <tbody id="users-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+          <!-- Stats rápidos -->
+          <div class="card">
+            <div class="card-header"><h3>Estatísticas do sistema</h3></div>
+            <div class="card-body">
+              <div class="compare-item"><span class="compare-item-label">Total de registros</span><span class="compare-item-val" id="stat-records">–</span></div>
+              <div class="compare-item"><span class="compare-item-label">Clubes cadastrados</span><span class="compare-item-val" id="stat-clubes">–</span></div>
+              <div class="compare-item"><span class="compare-item-label">Anos cobertos</span><span class="compare-item-val" id="stat-anos">–</span></div>
+              <div class="compare-item"><span class="compare-item-label">Registros SAF</span><span class="compare-item-val" id="stat-saf">–</span></div>
+              <div class="compare-item"><span class="compare-item-label">Logs de auditoria</span><span class="compare-item-val" id="stat-logs">–</span></div>
+              <div class="compare-item"><span class="compare-item-label">Usuários ativos</span><span class="compare-item-val" id="stat-users">–</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- MODAL CRUD -->
+<div class="modal-overlay" id="modal-crud">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-title">Novo registro</h3>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-id">
+      <div class="form-grid">
+        <div class="form-group"><label>Clube</label><input id="f-clube" type="text" placeholder="Nome do clube"></div>
+        <div class="form-group"><label>Ano</label><select id="f-ano"><option>2020</option><option>2021</option><option>2022</option><option>2023</option><option>2024</option></select></div>
+        <div class="form-group"><label>Posição</label><input id="f-posicao" type="number" min="1" max="20" placeholder="1–20"></div>
+        <div class="form-group"><label>Pontos</label><input id="f-pontos" type="number" min="0" max="114" placeholder="0–114"></div>
+        <div class="form-group"><label>Receita (R$ mi)</label><input id="f-receita" type="number" step="0.1" placeholder="ex: 750.0"></div>
+        <div class="form-group"><label>Folha salarial (R$ mi)</label><input id="f-folha" type="number" step="0.1" placeholder="ex: 220.0"></div>
+        <div class="form-group"><label>Valor de mercado (R$ mi)</label><input id="f-mercado" type="number" step="0.1" placeholder="ex: 700.0"></div>
+        <div class="form-group"><label>Gastos c/ transf. (R$ mi)</label><input id="f-transf" type="number" step="0.1" placeholder="ex: 150.0"></div>
+        <div class="form-group"><label>SAF?</label><select id="f-saf"><option value="Não">Não (Associação)</option><option value="Sim">Sim (SAF)</option></select></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-sm" onclick="closeModal()">Cancelar</button>
+        <button class="btn-sm primary" onclick="saveRecord()">Salvar registro</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL USER -->
+<div class="modal-overlay" id="modal-user">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Novo usuário</h3>
+      <button class="modal-close" onclick="closeUserModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label>Nome completo</label><input id="u-nome" type="text" placeholder="Nome"></div>
+        <div class="form-group"><label>E-mail</label><input id="u-email" type="email" placeholder="email@dominio.com"></div>
+        <div class="form-group"><label>Senha</label><input id="u-senha" type="password" placeholder="Mínimo 6 caracteres"></div>
+        <div class="form-group"><label>Perfil</label><select id="u-role"><option value="consultor">Consultor</option><option value="gestor">Gestor</option><option value="admin">Administrador</option></select></div>
+        <div class="form-group"><label>Clube (gestor)</label><input id="u-clube" type="text" placeholder="Somente para gestores"></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-sm" onclick="closeUserModal()">Cancelar</button>
+        <button class="btn-sm primary" onclick="saveUser()">Criar usuário</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const RAW_DATA = [{"Ano":2020,"Clube":"Flamengo","Posicao":1,"Pontos":71,"Receita_Total_Mi":750.0,"Folha_Salarial_Mi":220.0,"Valor_Mercado_Mi":700.0,"Gastos_Transferencias_Mi":150.0,"SAF":"Não"},{"Ano":2020,"Clube":"Internacional","Posicao":2,"Pontos":70,"Receita_Total_Mi":330.0,"Folha_Salarial_Mi":150.0,"Valor_Mercado_Mi":300.0,"Gastos_Transferencias_Mi":40.0,"SAF":"Não"},{"Ano":2020,"Clube":"Atletico-MG","Posicao":3,"Pontos":68,"Receita_Total_Mi":400.0,"Folha_Salarial_Mi":180.0,"Valor_Mercado_Mi":450.0,"Gastos_Transferencias_Mi":180.0,"SAF":"Sim"},{"Ano":2020,"Clube":"Sao Paulo","Posicao":4,"Pontos":66,"Receita_Total_Mi":450.0,"Folha_Salarial_Mi":160.0,"Valor_Mercado_Mi":350.0,"Gastos_Transferencias_Mi":50.0,"SAF":"Não"},{"Ano":2020,"Clube":"Fluminense","Posicao":5,"Pontos":64,"Receita_Total_Mi":250.0,"Folha_Salarial_Mi":100.0,"Valor_Mercado_Mi":200.0,"Gastos_Transferencias_Mi":20.0,"SAF":"Não"},{"Ano":2020,"Clube":"Gremio","Posicao":6,"Pontos":59,"Receita_Total_Mi":400.0,"Folha_Salarial_Mi":160.0,"Valor_Mercado_Mi":350.0,"Gastos_Transferencias_Mi":60.0,"SAF":"Não"},{"Ano":2020,"Clube":"Palmeiras","Posicao":7,"Pontos":58,"Receita_Total_Mi":600.0,"Folha_Salarial_Mi":200.0,"Valor_Mercado_Mi":600.0,"Gastos_Transferencias_Mi":100.0,"SAF":"Não"},{"Ano":2020,"Clube":"Santos","Posicao":8,"Pontos":54,"Receita_Total_Mi":280.0,"Folha_Salarial_Mi":120.0,"Valor_Mercado_Mi":250.0,"Gastos_Transferencias_Mi":30.0,"SAF":"Não"},{"Ano":2020,"Clube":"Athletico-PR","Posicao":9,"Pontos":53,"Receita_Total_Mi":290.0,"Folha_Salarial_Mi":110.0,"Valor_Mercado_Mi":220.0,"Gastos_Transferencias_Mi":40.0,"SAF":"Não"},{"Ano":2020,"Clube":"Bragantino","Posicao":10,"Pontos":53,"Receita_Total_Mi":200.0,"Folha_Salarial_Mi":90.0,"Valor_Mercado_Mi":180.0,"Gastos_Transferencias_Mi":80.0,"SAF":"Sim"},{"Ano":2020,"Clube":"Ceara","Posicao":11,"Pontos":52,"Receita_Total_Mi":null,"Folha_Salarial_Mi":null,"Valor_Mercado_Mi":null,"Gastos_Transferencias_Mi":null,"SAF":"Não"},{"Ano":2020,"Clube":"Corinthians","Posicao":12,"Pontos":51,"Receita_Total_Mi":400.0,"Folha_Salarial_Mi":170.0,"Valor_Mercado_Mi":350.0,"Gastos_Transferencias_Mi":30.0,"SAF":"Não"},{"Ano":2020,"Clube":"Atletico-GO","Posicao":13,"Pontos":50,"Receita_Total_Mi":null,"Folha_Salarial_Mi":null,"Valor_Mercado_Mi":null,"Gastos_Transferencias_Mi":null,"SAF":"Não"},{"Ano":2020,"Clube":"Bahia","Posicao":14,"Pontos":44,"Receita_Total_Mi":180.0,"Folha_Salarial_Mi":80.0,"Valor_Mercado_Mi":150.0,"Gastos_Transferencias_Mi":20.0,"SAF":"Sim"},{"Ano":2020,"Clube":"Sport","Posicao":15,"Pontos":42,"Receita_Total_Mi":null,"Folha_Salarial_Mi":null,"Valor_Mercado_Mi":null,"Gastos_Transferencias_Mi":null,"SAF":"Não"},{"Ano":2020,"Clube":"Fortaleza","Posicao":16,"Pontos":41,"Receita_Total_Mi":120.0,"Folha_Salarial_Mi":60.0,"Valor_Mercado_Mi":100.0,"Gastos_Transferencias_Mi":10.0,"SAF":"Sim"},{"Ano":2020,"Clube":"Vasco","Posicao":17,"Pontos":41,"Receita_Total_Mi":200.0,"Folha_Salarial_Mi":110.0,"Valor_Mercado_Mi":180.0,"Gastos_Transferencias_Mi":25.0,"SAF":"Sim"},{"Ano":2020,"Clube":"Goias","Posicao":18,"Pontos":37,"Receita_Total_Mi":null,"Folha_Salarial_Mi":null,"Valor_Mercado_Mi":null,"Gastos_Transferencias_Mi":null,"SAF":"Não"},{"Ano":2020,"Clube":"Coritiba","Posicao":19,"Pontos":31,"Receita_Total_Mi":null,"Folha_Salarial_Mi":null,"Valor_Mercado_Mi":null,"Gastos_Transferencias_Mi":null,"SAF":"Sim"},{"Ano":2020,"Clube":"Botafogo","Posicao":20,"Pontos":27,"Receita_Total_Mi":160.0,"Folha_Salarial_Mi":90.0,"Valor_Mercado_Mi":150.0,"Gastos_Transferencias_Mi":15.0,"SAF":"Sim"},{"Ano":2021,"Clube":"Atletico-MG","Posicao":1,"Pontos":84,"Receita_Total_Mi":500.0,"Folha_Salarial_Mi":250.0,"Valor_Mercado_Mi":550.0,"Gastos_Transferencias_Mi":150.0,"SAF":"Sim"},{"Ano":2021,"Clube":"Flamengo","Posicao":2,"Pontos":71,"Receita_Total_Mi":1050.0,"Folha_Salarial_Mi":300.0,"Valor_Mercado_Mi":800.0,"Gastos_Transferencias_Mi":120.0,"SAF":"Não"},{"Ano":2021,"Clube":"Palmeiras","Posicao":3,"Pontos":66,"Receita_Total_Mi":900.0,"Folha_Salarial_Mi":250.0,"Valor_Mercado_Mi":750.0,"Gastos_Transferencias_Mi":80.0,"SAF":"Não"},{"Ano":2021,"Clube":"Fortaleza","Posicao":4,"Pontos":58,"Receita_Total_Mi":170.0,"Folha_Salarial_Mi":80.0,"Valor_Mercado_Mi":150.0,"Gastos_Transferencias_Mi":15.0,"SAF":"Sim"},{"Ano":2021,"Clube":"Corinthians","Posicao":5,"Pontos":57,"Receita_Total_Mi":500.0,"Folha_Salarial_Mi":200.0,"Valor_Mercado_Mi":400.0,"Gastos_Transferencias_Mi":40.0,"SAF":"Não"},{"Ano":2021,"Clube":"Bragantino","Posicao":6,"Pontos":56,"Receita_Total_Mi":250.0,"Folha_Salarial_Mi":110.0,"Valor_Mercado_Mi":250.0,"Gastos_Transferencias_Mi":60.0,"SAF":"Sim"},{"Ano":2021,"Clube":"Fluminense","Posicao":7,"Pontos":54,"Receita_Total_Mi":300.0,"Folha_Salarial_Mi":120.0,"Valor_Mercado_Mi":250.0,"Gastos_Transferencias_Mi":30.0,"SAF":"Não"},{"Ano":2021,"Clube":"America-MG","Posicao":8,"Pontos":53,"Receita_Total_Mi":null,"Folha_Salarial_Mi":null,"Valor_Mercado_Mi":null,"Gastos_Transferencias_Mi":null,"SAF":"Sim"},{"Ano":2021,"Clube":"Atletico-GO","Posicao":9,"Pontos":53,"Receita_Total_Mi":null,"Folha_Salarial_Mi":null,"Valor_Mercado_Mi":null,"Gastos_Transferencias_Mi":null,"SAF":"Não"},{"Ano":2021,"Clube":"Santos","Posicao":10,"Pontos":50,"Receita_Total_Mi":300.0,"Folha_Salarial_Mi":130.0,"Valor_Mercado_Mi":220.0,"Gastos_Transferencias_Mi":25.0,"SAF":"Não"},{"Ano":2021,"Clube":"Ceara","Posicao":11,"Pontos":50,"Receita_Total_Mi":null,"Folha_Salarial_Mi":null,"Valor_Mercado_Mi":null,"Gastos_Transferencias_Mi":null,"SAF":"Não"},{"Ano":2021,"Clube":"Internacional","Posicao":12,"Pontos":48,"Receita_Total_Mi":380.0,"Folha_Salarial_Mi":170.0,"Valor_Mercado_Mi":300.0,"Gastos_Transferencias_Mi":35.0,"SAF":"Não"},{"Ano":2021,"Clube":"Sao Paulo","Posicao":13,"Pontos":48,"Receita_Total_Mi":450.0,"Folha_Salarial_Mi":180.0,"Valor_Mercado_Mi":350.0,"Gastos_Transferencias_Mi":40.0,"SAF":"Não"},{"Ano":2021,"Clube":"Athletico-PR","Posicao":14,"Pontos":47,"Receita_Total_Mi":350.0,"Folha_Salarial_Mi":130.0,"Valor_Mercado_Mi":280.0,"Gastos_Transferencias_Mi":45.0,"SAF":"Não"},{"Ano":2021,"Clube":"Cuiaba","Posicao":15,"Pontos":47,"Receita_Total_Mi":null,"Folha_Salarial_Mi":null,"Valor_Mercado_Mi":null,"Gastos_Transferencias_Mi":null,"SAF":"Sim"},{"Ano":2021,"Clube":"Juventude","Posicao":16,"Pontos":46,"Receita_Total_Mi":null,"Folha_Salarial_Mi":null,"Valor_Mercado_Mi":null,"Gastos_Transferencias_Mi":null,"SAF":"Não"},{"Ano":2021,"Clube":"Gremio","Posicao":17,"Pontos":43,"Receita_Total_Mi":450.0,"Folha_Salarial_Mi":190.0,"Valor_Mercado_Mi":300.0,"Gastos_Transferencias_Mi":50.0,"SAF":"Não"},{"Ano":2021,"Clube":"Bahia","Posicao":18,"Pontos":43,"Receita_Total_Mi":200.0,"Folha_Salarial_Mi":90.0,"Valor_Mercado_Mi":150.0,"Gastos_Transferencias_Mi":20.0,"SAF":"Sim"},{"Ano":2021,"Clube":"Sport","Posicao":19,"Pontos":38,"Receita_Total_Mi":null,"Folha_Salarial_Mi":null,"Valor_Mercado_Mi":null,"Gastos_Transferencias_Mi":null,"SAF":"Não"},{"Ano":2021,"Clube":"Chapecoense","Posicao":20,"Pontos":15,"Receita_Total_Mi":null,"Folha_Salarial_Mi":null,"Valor_Mercado_Mi":null,"Gastos_Transferencias_Mi":null,"SAF":"Não"},{"Ano":2022,"Clube":"Palmeiras","Posicao":1,"Pontos":81,"Receita_Total_Mi":856.0,"Folha_Salarial_Mi":280.0,"Valor_Mercado_Mi":850.0,"Gastos_Transferencias_Mi":100.0,"SAF":"Não"},{"Ano":2022,"Clube":"Internacional","Posicao":2,"Pontos":73,"Receita_Total_Mi":430.0,"Folha_Salarial_Mi":190.0,"Valor_Mercado_Mi":350.0,"Gastos_Transferencias_Mi":45.0,"SAF":"Não"},{"Ano":2022,"Clube":"Fluminense","Posicao":3,"Pontos":70,"Receita_Total_Mi":347.0,"Folha_Salarial_Mi":150.0,"Valor_Mercado_Mi":350.0,"Gastos_Transferencias_Mi":40.0,"SAF":"Não"},{"Ano":2022,"Clube":"Corinthians","Posicao":4,"Pontos":65,"Receita_Total_Mi":779.0,"Folha_Salarial_Mi":250.0,"Valor_Mercado_Mi":500.0,"Gastos_Transferencias_Mi":60.0,"SAF":"Não"},{"Ano":2022,"Clube":"Flamengo","Posicao":5,"Pontos":62,"Receita_Total_Mi":1177.0,"Folha_Salarial_Mi":350.0,"Valor_Mercado_Mi":900.0,"Gastos_Transferencias_Mi":200.0,"SAF":"Não"},{"Ano":2022,"Clube":"Athletico-PR","Posicao":6,"Pontos":58,"Receita_Total_Mi":380.0,"Folha_Salarial_Mi":150.0,"Valor_Mercado_Mi":300.0,"Gastos_Transferencias_Mi":55.0,"SAF":"Não"},{"Ano":2022,"Clube":"Atletico-MG","Posicao":7,"Pontos":58,"Receita_Total_Mi":397.0,"Folha_Salarial_Mi":240.0,"Valor_Mercado_Mi":600.0,"Gastos_Transferencias_Mi":80.0,"SAF":"Sim"},{"Ano":2022,"Clube":"Fortaleza","Posicao":8,"Pontos":55,"Receita_Total_Mi":260.0,"Folha_Salarial_Mi":110.0,"Valor_Mercado_Mi":200.0,"Gastos_Transferencias_Mi":30.0,"SAF":"Sim"},{"Ano":2022,"Clube":"Sao Paulo","Posicao":9,"Pontos":54,"Receita_Total_Mi":650.0,"Folha_Salarial_Mi":220.0,"Valor_Mercado_Mi":450.0,"Gastos_Transferencias_Mi":60.0,"SAF":"Não"},{"Ano":2022,"Clube":"America-MG","Posicao":10,"Pontos":53,"Receita_Total_Mi":null,"Folha_Salarial_Mi":null,"Valor_Mercado_Mi":null,"Gastos_Transferencias_Mi":null,"SAF":"Sim"},{"Ano":2022,"Clube":"Botafogo","Posicao":11,"Pontos":53,"Receita_Total_Mi":300.0,"Folha_Salarial_Mi":140.0,"Valor_Mercado_Mi":300.0,"Gastos_Transferencias_Mi":120.0,"SAF":"Sim"},{"Ano":2022,"Clube":"Santos","Posicao":12,"Pontos":47,"Receita_Total_Mi":340.0,"Folha_Salarial_Mi":140.0,"Valor_Mercado_Mi":250.0,"Gastos_Transferencias_Mi":30.0,"SAF":"Não"},{"Ano":2022,"Clube":"Goias","Posicao":13,"Pontos":46,"Receita_Total_Mi":null,"Folha_Salarial_Mi":null,"Valor_Mercado_Mi":null,"Gastos_Transferencias_Mi":null,"SAF":"Não"},{"Ano":2022,"Clube":"Bragantino","Posicao":14,"Pontos":44,"Receita_Total_Mi":300.0,"Folha_Salarial_Mi":120.0,"Valor_Mercado_Mi":280.0,"Gastos_Transferencias_Mi":50.0,"SAF":"Sim"},{"Ano":2022,"Clube":"Coritiba","Posicao":15,"Pontos":42,"Receita_Total_Mi":null,"Folha_Salarial_Mi":null,"Valor_Mercado_Mi":null,"Gastos_Transferencias_Mi":null,"SAF":"Sim"},{"Ano":2022,"Clube":"Cuiaba","Posicao":16,"Pontos":41,"Receita_Total_Mi":null,"Folha_Salarial_Mi":null,"Valor_Mercado_Mi":null,"Gastos_Transferencias_Mi":null,"SAF":"Sim"},{"Ano":2022,"Clube":"Ceara","Posicao":17,"Pontos":37,"Receita_Total_Mi":null,"Folha_Salarial_Mi":null,"Valor_Mercado_Mi":null,"Gastos_Transferencias_Mi":null,"SAF":"Não"},{"Ano":2022,"Clube":"Atletico-GO","Posicao":18,"Pontos":36,"Receita_Total_Mi":null,"Folha_Salarial_Mi":null,"Valor_Mercado_Mi":null,"Gastos_Transferencias_Mi":null,"SAF":"Não"},{"Ano":2022,"Clube":"Avai","Posicao":19,"Pontos":35,"Receita_Total_Mi":null,"Folha_Salarial_Mi":null,"Valor_Mercado_Mi":null,"Gastos_Transferencias_Mi":null,"SAF":"Não"},{"Ano":2022,"Clube":"Juventude","Posicao":20,"Pontos":22,"Receita_Total_Mi":null,"Folha_Salarial_Mi":null,"Valor_Mercado_Mi":null,"Gastos_Transferencias_Mi":null,"SAF":"Não"},{"Ano":2023,"Clube":"Palmeiras","Posicao":1,"Pontos":70,"Receita_Total_Mi":908.0,"Folha_Salarial_Mi":300.0,"Valor_Mercado_Mi":900.0,"Gastos_Transferencias_Mi":120.0,"SAF":"Não"},{"Ano":2023,"Clube":"Gremio","Posicao":2,"Pontos":68,"Receita_Total_Mi":450.0,"Folha_Salarial_Mi":220.0,"Valor_Mercado_Mi":350.0,"Gastos_Transferencias_Mi":40.0,"SAF":"Não"},{"Ano":2023,"Clube":"Atletico-MG","Posicao":3,"Pontos":66,"Receita_Total_Mi":350.0,"Folha_Salarial_Mi":240.0,"Valor_Mercado_Mi":550.0,"Gastos_Transferencias_Mi":50.0,"SAF":"Sim"},{"Ano":2023,"Clube":"Flamengo","Posicao":4,"Pontos":66,"Receita_Total_Mi":1374.0,"Folha_Salarial_Mi":400.0,"Valor_Mercado_Mi":1000.0,"Gastos_Transferencias_Mi":250.0,"SAF":"Não"},{"Ano":2023,"Clube":"Botafogo","Posicao":5,"Pontos":64,"Receita_Total_Mi":388.0,"Folha_Salarial_Mi":180.0,"Valor_Mercado_Mi":450.0,"Gastos_Transferencias_Mi":100.0,"SAF":"Sim"},{"Ano":2023,"Clube":"Bragantino","Posicao":6,"Pontos":62,"Receita_Total_Mi":350.0,"Folha_Salarial_Mi":130.0,"Valor_Mercado_Mi":300.0,"Gastos_Transferencias_Mi":60.0,"SAF":"Sim"},{"Ano":2023,"Clube":"Fluminense","Posicao":7,"Pontos":56,"Receita_Total_Mi":695.0,"Folha_Salarial_Mi":200.0,"Valor_Mercado_Mi":400.0,"Gastos_Transferencias_Mi":50.0,"SAF":"Não"},{"Ano":2023,"Clube":"Athletico-PR","Posicao":8,"Pontos":56,"Receita_Total_Mi":500.0,"Folha_Salarial_Mi":160.0,"Valor_Mercado_Mi":350.0,"Gastos_Transferencias_Mi":60.0,"SAF":"Não"},{"Ano":2023,"Clube":"Internacional","Posicao":9,"Pontos":55,"Receita_Total_Mi":500.0,"Folha_Salarial_Mi":210.0,"Valor_Mercado_Mi":400.0,"Gastos_Transferencias_Mi":40.0,"SAF":"Não"},{"Ano":2023,"Clube":"Fortaleza","Posicao":10,"Pontos":54,"Receita_Total_Mi":370.0,"Folha_Salarial_Mi":140.0,"Valor_Mercado_Mi":250.0,"Gastos_Transferencias_Mi":30.0,"SAF":"Sim"},{"Ano":2023,"Clube":"Sao Paulo","Posicao":11,"Pontos":53,"Receita_Total_Mi":680.0,"Folha_Salarial_Mi":250.0,"Valor_Mercado_Mi":500.0,"Gastos_Transferencias_Mi":80.0,"SAF":"Não"},{"Ano":2023,"Clube":"Cuiaba","Posicao":12,"Pontos":51,"Receita_Total_Mi":140.0,"Folha_Salarial_Mi":70.0,"Valor_Mercado_Mi":120.0,"Gastos_Transferencias_Mi":15.0,"SAF":"Sim"},{"Ano":2023,"Clube":"Corinthians","Posicao":13,"Pontos":50,"Receita_Total_Mi":1010.0,"Folha_Salarial_Mi":300.0,"Valor_Mercado_Mi":550.0,"Gastos_Transferencias_Mi":70.0,"SAF":"Não"},{"Ano":2023,"Clube":"Cruzeiro","Posicao":14,"Pontos":47,"Receita_Total_Mi":300.0,"Folha_Salarial_Mi":150.0,"Valor_Mercado_Mi":250.0,"Gastos_Transferencias_Mi":40.0,"SAF":"Sim"},{"Ano":2023,"Clube":"Vasco","Posicao":15,"Pontos":45,"Receita_Total_Mi":360.0,"Folha_Salarial_Mi":190.0,"Valor_Mercado_Mi":300.0,"Gastos_Transferencias_Mi":110.0,"SAF":"Sim"},{"Ano":2023,"Clube":"Bahia","Posicao":16,"Pontos":44,"Receita_Total_Mi":350.0,"Folha_Salarial_Mi":170.0,"Valor_Mercado_Mi":280.0,"Gastos_Transferencias_Mi":80.0,"SAF":"Sim"},{"Ano":2023,"Clube":"Santos","Posicao":17,"Pontos":43,"Receita_Total_Mi":400.0,"Folha_Salarial_Mi":180.0,"Valor_Mercado_Mi":350.0,"Gastos_Transferencias_Mi":50.0,"SAF":"Não"},{"Ano":2023,"Clube":"Goias","Posicao":18,"Pontos":38,"Receita_Total_Mi":null,"Folha_Salarial_Mi":null,"Valor_Mercado_Mi":null,"Gastos_Transferencias_Mi":null,"SAF":"Não"},{"Ano":2023,"Clube":"Coritiba","Posicao":19,"Pontos":30,"Receita_Total_Mi":null,"Folha_Salarial_Mi":null,"Valor_Mercado_Mi":null,"Gastos_Transferencias_Mi":null,"SAF":"Sim"},{"Ano":2023,"Clube":"America-MG","Posicao":20,"Pontos":24,"Receita_Total_Mi":null,"Folha_Salarial_Mi":null,"Valor_Mercado_Mi":null,"Gastos_Transferencias_Mi":null,"SAF":"Sim"},{"Ano":2024,"Clube":"Botafogo","Posicao":1,"Pontos":79,"Receita_Total_Mi":550.0,"Folha_Salarial_Mi":250.0,"Valor_Mercado_Mi":600.0,"Gastos_Transferencias_Mi":180.0,"SAF":"Sim"},{"Ano":2024,"Clube":"Palmeiras","Posicao":2,"Pontos":73,"Receita_Total_Mi":1274.0,"Folha_Salarial_Mi":350.0,"Valor_Mercado_Mi":1050.0,"Gastos_Transferencias_Mi":180.0,"SAF":"Não"},{"Ano":2024,"Clube":"Flamengo","Posicao":3,"Pontos":73,"Receita_Total_Mi":1334.0,"Folha_Salarial_Mi":450.0,"Valor_Mercado_Mi":1100.0,"Gastos_Transferencias_Mi":300.0,"SAF":"Não"},{"Ano":2024,"Clube":"Fortaleza","Posicao":4,"Pontos":68,"Receita_Total_Mi":420.0,"Folha_Salarial_Mi":160.0,"Valor_Mercado_Mi":300.0,"Gastos_Transferencias_Mi":50.0,"SAF":"Sim"},{"Ano":2024,"Clube":"Internacional","Posicao":5,"Pontos":68,"Receita_Total_Mi":550.0,"Folha_Salarial_Mi":230.0,"Valor_Mercado_Mi":450.0,"Gastos_Transferencias_Mi":60.0,"SAF":"Não"},{"Ano":2024,"Clube":"Sao Paulo","Posicao":6,"Pontos":59,"Receita_Total_Mi":731.0,"Folha_Salarial_Mi":280.0,"Valor_Mercado_Mi":550.0,"Gastos_Transferencias_Mi":90.0,"SAF":"Não"},{"Ano":2024,"Clube":"Corinthians","Posicao":7,"Pontos":56,"Receita_Total_Mi":1115.0,"Folha_Salarial_Mi":320.0,"Valor_Mercado_Mi":600.0,"Gastos_Transferencias_Mi":150.0,"SAF":"Não"},{"Ano":2024,"Clube":"Bahia","Posicao":8,"Pontos":53,"Receita_Total_Mi":450.0,"Folha_Salarial_Mi":200.0,"Valor_Mercado_Mi":350.0,"Gastos_Transferencias_Mi":120.0,"SAF":"Sim"},{"Ano":2024,"Clube":"Cruzeiro","Posicao":9,"Pontos":52,"Receita_Total_Mi":400.0,"Folha_Salarial_Mi":180.0,"Valor_Mercado_Mi":350.0,"Gastos_Transferencias_Mi":100.0,"SAF":"Sim"},{"Ano":2024,"Clube":"Vasco","Posicao":10,"Pontos":50,"Receita_Total_Mi":420.0,"Folha_Salarial_Mi":210.0,"Valor_Mercado_Mi":380.0,"Gastos_Transferencias_Mi":90.0,"SAF":"Sim"},{"Ano":2024,"Clube":"Vitoria","Posicao":11,"Pontos":47,"Receita_Total_Mi":null,"Folha_Salarial_Mi":null,"Valor_Mercado_Mi":null,"Gastos_Transferencias_Mi":null,"SAF":"Não"},{"Ano":2024,"Clube":"Atletico-MG","Posicao":12,"Pontos":47,"Receita_Total_Mi":674.0,"Folha_Salarial_Mi":250.0,"Valor_Mercado_Mi":550.0,"Gastos_Transferencias_Mi":60.0,"SAF":"Sim"},{"Ano":2024,"Clube":"Fluminense","Posicao":13,"Pontos":46,"Receita_Total_Mi":684.0,"Folha_Salarial_Mi":220.0,"Valor_Mercado_Mi":450.0,"Gastos_Transferencias_Mi":40.0,"SAF":"Não"},{"Ano":2024,"Clube":"Gremio","Posicao":14,"Pontos":45,"Receita_Total_Mi":500.0,"Folha_Salarial_Mi":240.0,"Valor_Mercado_Mi":400.0,"Gastos_Transferencias_Mi":50.0,"SAF":"Não"},{"Ano":2024,"Clube":"Juventude","Posicao":15,"Pontos":45,"Receita_Total_Mi":null,"Folha_Salarial_Mi":null,"Valor_Mercado_Mi":null,"Gastos_Transferencias_Mi":null,"SAF":"Não"},{"Ano":2024,"Clube":"Bragantino","Posicao":16,"Pontos":44,"Receita_Total_Mi":380.0,"Folha_Salarial_Mi":140.0,"Valor_Mercado_Mi":320.0,"Gastos_Transferencias_Mi":50.0,"SAF":"Sim"},{"Ano":2024,"Clube":"Athletico-PR","Posicao":17,"Pontos":42,"Receita_Total_Mi":450.0,"Folha_Salarial_Mi":150.0,"Valor_Mercado_Mi":300.0,"Gastos_Transferencias_Mi":40.0,"SAF":"Não"},{"Ano":2024,"Clube":"Criciuma","Posicao":18,"Pontos":38,"Receita_Total_Mi":null,"Folha_Salarial_Mi":null,"Valor_Mercado_Mi":null,"Gastos_Transferencias_Mi":null,"SAF":"Não"},{"Ano":2024,"Clube":"Cuiaba","Posicao":19,"Pontos":29,"Receita_Total_Mi":null,"Folha_Salarial_Mi":null,"Valor_Mercado_Mi":null,"Gastos_Transferencias_Mi":null,"SAF":"Sim"},{"Ano":2024,"Clube":"Atletico-GO","Posicao":20,"Pontos":26,"Receita_Total_Mi":null,"Folha_Salarial_Mi":null,"Valor_Mercado_Mi":null,"Gastos_Transferencias_Mi":null,"SAF":"Não"}];
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let DATA = RAW_DATA.map((r,i) => ({...r, _id: i}));
+let nextId = DATA.length;
+let LOGS = [];
+let USERS = [
+  {id:1, nome:'Gabriel Silva (Admin)', email:'admin@soccerfinance.com', senha:'admin123', role:'admin', clube:''},
+  {id:2, nome:'Ana Consultor', email:'consultor@soccerfinance.com', senha:'cons123', role:'consultor', clube:''},
+  {id:3, nome:'Gestor Flamengo', email:'gestor@flamengo.com', senha:'gest123', role:'gestor', clube:'Flamengo'},
+  {id:4, nome:'Gestor Palmeiras', email:'gestor@palmeiras.com.br', senha:'palmeiras123', role:'gestor', clube:'Palmeiras'},
+  {id:5, nome:'Gestor Cuiabá', email:'gestor@cuiaba.com.br', senha:'cuiaba123', role:'gestor', clube:'Cuiaba'},
+  {id:6, nome:'Gestor Bragantino', email:'gestor@bragantino.com.br', senha:'braga123', role:'gestor', clube:'Bragantino'},
+  {id:7, nome:'Gestor Fortaleza', email:'gestor@fortaleza.com.br', senha:'leao123', role:'gestor', clube:'Fortaleza'}
+];
+let currentUser = null;
+let charts_cache = {};
+let editingId = null;
+
+// ── AUTH ───────────────────────────────────────────────────────────────────
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value.trim();
+  const role  = document.getElementById('login-role').value;
+  const user  = USERS.find(u => u.email === email && u.senha === pass && u.role === role);
+  if (!user) { document.getElementById('login-error').classList.add('show'); return; }
+  document.getElementById('login-error').classList.remove('show');
+  currentUser = user;
+  addLog('login', `Login no sistema (perfil: ${role})`);
+  buildApp();
+}
+function doLogout() {
+  addLog('login', 'Logout do sistema');
+  currentUser = null;
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  destroyAllCharts();
+}
+
+// ── LOG ────────────────────────────────────────────────────────────────────
+function addLog(type, msg) {
+  LOGS.unshift({ type, msg, user: currentUser?.nome || '?', time: new Date().toLocaleString('pt-BR') });
+}
+
+// ── APP SHELL ──────────────────────────────────────────────────────────────
+function buildApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  const app = document.getElementById('app');
+  app.style.display = 'flex';
+  app.style.flexDirection = 'column';
+
+  const r = currentUser.role;
+  document.getElementById('topbar-name').textContent = currentUser.nome;
+  const badge = document.getElementById('topbar-badge');
+  badge.textContent = r === 'admin' ? 'Administrador' : r === 'consultor' ? 'Consultor' : 'Gestor';
+  badge.className = 'badge-role ' + (r==='admin'?'badge-admin':r==='consultor'?'badge-consultor':'badge-gestor');
+
+  buildSidebar();
+  populateFilters();
+  const startPage = (r === 'gestor') ? 'relatorio' : 'introducao';
+  showPage(startPage);
+}
+
+const NAV_CONFIG = {
+  admin:    [
+    {section:'Visão geral'},
+    {id:'introducao',   icon:'◈', label:'Introdução'},
+    {section:'Análise'},
+    {id:'efetividade',  icon:'◎', label:'Efetividade financeira'},
+    {section:'Dados'},
+    {id:'dados',        icon:'⊞', label:'Base de dados'},
+    {section:'Sistema'},
+    {id:'logs',         icon:'◷', label:'Log de auditoria'},
+    {id:'admin',        icon:'◎', label:'Administração'},
+  ],
+  consultor:[
+    {section:'Visão geral'},
+    {id:'introducao',   icon:'◈', label:'Introdução'},
+    {section:'Análise'},
+    {id:'efetividade',  icon:'◎', label:'Efetividade financeira'},
+    {section:'Dados'},
+    {id:'dados',        icon:'⊞', label:'Base de dados'},
+  ],
+  gestor:[
+    {section:'Meu clube'},
+    {id:'relatorio',    icon:'▤', label:'Gerar relatório'},
+    {section:'Dados'},
+    {id:'dados',        icon:'⊞', label:'Tabela geral'},
+  ],
+};
+
+function buildSidebar() {
+  const items = NAV_CONFIG[currentUser.role];
+  let html = '';
+  items.forEach(item => {
+    if (item.section) { html += `<div class="nav-section">${item.section}</div>`; return; }
+    html += `<div class="nav-item" id="nav-${item.id}" onclick="showPage('${item.id}')">
+      <span style="font-size:14px">${item.icon}</span>
+      <span>${item.label}</span>
+    </div>`;
+  });
+  document.getElementById('sidebar').innerHTML = html;
+}
+
+function showPage(id) {
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+  const nav = document.getElementById('nav-'+id);
+  if (nav) nav.classList.add('active');
+  document.getElementById('page-'+id).classList.add('active');
+  // Render on demand
+  if (id==='introducao')  renderIntroducao();
+  if (id==='dashboard')    renderDashboard();
+  if (id==='dados')        { renderTable(); setupActionsCol(); }
+  if (id==='analise')      renderAnalise();
+  if (id==='clube')        renderClube();
+  if (id==='efetividade')  renderEfetividade();
+  if (id==='relatorio')    renderRelatorio();
+  if (id==='logs')         renderLogs();
+  if (id==='admin')        renderAdmin();
+}
+
+// ── FILTERS ───────────────────────────────────────────────────────────────
+function populateFilters() {
+  const anos = [...new Set(DATA.map(d=>d.Ano))].sort();
+  ['filter-ano','analise-ano','ef-ano'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    sel.innerHTML = '<option value="">Todos os anos</option>' + anos.map(a=>`<option>${a}</option>`).join('');
+  });
+}
+
+// ── SPEARMAN ──────────────────────────────────────────────────────────────
+function spearman(xs, ys) {
+  const n = xs.length;
+  if (!n) return 0;
+  const rankOf = arr => {
+    const sorted = [...arr].map((v,i)=>({v,i})).sort((a,b)=>a.v-b.v);
+    const r = new Array(n);
+    sorted.forEach((item,rank) => r[item.i] = rank+1);
+    return r;
+  };
+  const rx = rankOf(xs), ry = rankOf(ys);
+  let d2 = 0;
+  for (let i=0;i<n;i++) d2 += (rx[i]-ry[i])**2;
+  return 1 - 6*d2/(n*(n*n-1));
+}
+function spearmanPair(col) {
+  const valid = DATA.filter(d => d[col] != null && d.Pontos != null);
+  return spearman(valid.map(d=>d[col]), valid.map(d=>d.Pontos));
+}
+
+// ── CHART HELPERS ─────────────────────────────────────────────────────────
+function destroyAllCharts() {
+  Object.values(charts_cache).forEach(c => { try{c.destroy()}catch(e){} });
+  charts_cache = {};
+}
+function mkChart(id, cfg) {
+  if (charts_cache[id]) { try{charts_cache[id].destroy()}catch(e){} }
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  charts_cache[id] = new Chart(ctx, cfg);
+}
+const GRN = '#1D9E75', GRN2 = '#9FE1CB', AMB = '#BA7517', GRY = '#888780', BLU = '#185FA5';
+const baseOpts = {responsive:true, maintainAspectRatio:false,
+  plugins:{legend:{display:false}},
+  scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{color:'#5F5E5A',font:{size:11}}},
+          y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{color:'#5F5E5A',font:{size:11}}}}};
+
+// ── INTRODUÇÃO ────────────────────────────────────────────────────────────
+function renderIntroducao() {
+  // nothing dynamic needed; HTML is static, just update KPIs from data
+  // (page is static HTML, no dynamic render needed)
+}
+function loadIntroStreamlit() {
+  const url = document.getElementById('intro-streamlit-url').value.trim();
+  if (!url) { showAlert('Cole a URL do Streamlit primeiro.','error'); return; }
+  const frame = document.getElementById('intro-streamlit-frame');
+  const placeholder = document.getElementById('intro-embed-placeholder');
+  document.getElementById('intro-embed-url-label').textContent = url.replace(/^https?:\/\//,'') + ' · dashboard_futebol.py';
+  frame.src = url;
+  frame.style.display = 'block';
+  placeholder.style.display = 'none';
+  addLog('login', `Dashboard Streamlit carregado (Introdução): ${url}`);
+  showAlert('Streamlit carregado! Se ficar em branco, rode com --server.enableCORS false','success');
+}
+function unloadIntroStreamlit() {
+  const frame = document.getElementById('intro-streamlit-frame');
+  const placeholder = document.getElementById('intro-embed-placeholder');
+  frame.src = ''; frame.style.display = 'none';
+  placeholder.style.display = 'flex';
+  document.getElementById('intro-embed-url-label').textContent = 'aguardando URL · dashboard_futebol.py';
+  document.getElementById('intro-streamlit-url').value = '';
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────────
+function renderDashboard() {
+  const total = DATA.length;
+  const withFin = DATA.filter(d=>d.Folha_Salarial_Mi!=null).length;
+  const avgPts = (DATA.reduce((s,d)=>s+d.Pontos,0)/total).toFixed(1);
+  const clubes = new Set(DATA.map(d=>d.Clube)).size;
+
+  document.getElementById('kpi-row').innerHTML = `
+    <div class="kpi-card accent"><div class="kpi-label">Registros</div><div class="kpi-value">${total}</div><div class="kpi-sub">2020–2024</div></div>
+    <div class="kpi-card"><div class="kpi-label">Clubes únicos</div><div class="kpi-value">${clubes}</div><div class="kpi-sub">Série A</div></div>
+    <div class="kpi-card"><div class="kpi-label">Pontos médios</div><div class="kpi-value">${avgPts}</div><div class="kpi-sub">por temporada</div></div>
+    <div class="kpi-card"><div class="kpi-label">Com dados fin.</div><div class="kpi-value">${withFin}</div><div class="kpi-sub">registros completos</div></div>
+  `;
+
+  // Spearman table
+  const metrics = [
+    {col:'Folha_Salarial_Mi',     label:'Folha salarial'},
+    {col:'Receita_Total_Mi',      label:'Receita total'},
+    {col:'Valor_Mercado_Mi',      label:'Valor de mercado'},
+    {col:'Gastos_Transferencias_Mi', label:'Gastos transf.'},
+  ];
+  document.getElementById('spearman-rows').innerHTML = metrics.map(m => {
+    const r = spearmanPair(m.col);
+    const w = Math.round(Math.abs(r)*100);
+    return `<tr>
+      <td>${m.label}</td>
+      <td><span class="r-val">${r.toFixed(4)}</span></td>
+      <td><div class="r-bar-wrap"><div class="r-bar" style="width:${w}px"></div><span style="font-size:11px;color:var(--text-2)">${(r*100).toFixed(1)}%</span></div></td>
+      <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text-2)">&lt; 0.0001</td>
+    </tr>`;
+  }).join('');
+
+  // Pontos por ano
+  const anos = [2020,2021,2022,2023,2024];
+  const avgByAno = anos.map(a => { const d=DATA.filter(x=>x.Ano===a); return d.length?+(d.reduce((s,x)=>s+x.Pontos,0)/d.length).toFixed(1):0; });
+  mkChart('chart-anos', {type:'bar', data:{labels:anos.map(String), datasets:[{data:avgByAno, backgroundColor:GRN+'99', borderColor:GRN, borderWidth:1.5, borderRadius:5}]}, options:{...baseOpts}});
+
+  // SAF vs Assoc
+  const safPts = DATA.filter(d=>d.SAF==='Sim'); const assocPts = DATA.filter(d=>d.SAF==='Não');
+  const avgSaf = +(safPts.reduce((s,d)=>s+d.Pontos,0)/safPts.length).toFixed(1);
+  const avgAssoc = +(assocPts.reduce((s,d)=>s+d.Pontos,0)/assocPts.length).toFixed(1);
+  mkChart('chart-saf',{type:'bar',data:{labels:['SAF','Associação'],datasets:[{data:[avgSaf,avgAssoc],backgroundColor:[GRN+'99',GRY+'99'],borderColor:[GRN,GRY],borderWidth:1.5,borderRadius:5}]},options:{...baseOpts,plugins:{legend:{display:false}}}});
+
+  // Scatter
+  const sc = DATA.filter(d=>d.Folha_Salarial_Mi!=null);
+  mkChart('chart-scatter',{type:'scatter',data:{datasets:[{data:sc.map(d=>({x:d.Folha_Salarial_Mi,y:d.Pontos})),backgroundColor:GRN+'66',pointRadius:4}]},options:{...baseOpts,plugins:{legend:{display:false}},scales:{x:{title:{display:true,text:'Folha (R$mi)',font:{size:11}},grid:{color:'rgba(0,0,0,.05)'},ticks:{color:'#5F5E5A',font:{size:11}}},y:{title:{display:true,text:'Pontos',font:{size:11}},grid:{color:'rgba(0,0,0,.05)'},ticks:{color:'#5F5E5A',font:{size:11}}}}}});
+}
+
+// ── TABLE (CRUD) ───────────────────────────────────────────────────────────
+function setupActionsCol() {
+  const h = document.getElementById('actions-header');
+  if (currentUser.role === 'gestor') h.style.display = 'none';
+}
+function filteredData() {
+  const q = (document.getElementById('search-clube')?.value||'').toLowerCase();
+  const ano = document.getElementById('filter-ano')?.value;
+  const saf = document.getElementById('filter-saf')?.value;
+  return DATA.filter(d =>
+    (!q || d.Clube.toLowerCase().includes(q)) &&
+    (!ano || d.Ano == ano) &&
+    (!saf || d.SAF === saf)
+  );
+}
+function renderTable() {
+  const rows = filteredData();
+  document.getElementById('table-count').textContent = `${rows.length} registro(s)`;
+  const canEdit = currentUser.role !== 'gestor';
+  document.getElementById('btn-add').style.display = canEdit ? '' : 'none';
+  document.getElementById('data-table-body').innerHTML = rows.map(d => {
+    const fin = v => v != null ? v.toFixed(0) : '<span style="color:var(--text-2)">–</span>';
+    const acts = canEdit ? `<button class="btn-sm" onclick="openModal(${d._id})">Editar</button>
+      <button class="btn-sm danger" onclick="deleteRecord(${d._id})">Excluir</button>` : '';
+    return `<tr>
+      <td style="font-weight:500">${d.Clube}</td>
+      <td>${d.Ano}</td>
+      <td><span class="badge badge-pos">${d.Posicao}º</span></td>
+      <td style="font-family:'DM Mono',monospace;font-weight:500">${d.Pontos}</td>
+      <td>${fin(d.Receita_Total_Mi)}</td>
+      <td>${fin(d.Folha_Salarial_Mi)}</td>
+      <td>${fin(d.Valor_Mercado_Mi)}</td>
+      <td>${fin(d.Gastos_Transferencias_Mi)}</td>
+      <td><span class="badge ${d.SAF==='Sim'?'badge-saf':'badge-nassoc'}">${d.SAF==='Sim'?'SAF':'Assoc.'}</span></td>
+      <td style="display:${currentUser.role==='gestor'?'none':''}">${acts}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── CRUD ───────────────────────────────────────────────────────────────────
+function openModal(id=null) {
+  editingId = id;
+  document.getElementById('modal-title').textContent = id==null ? 'Novo registro' : 'Editar registro';
+  if (id != null) {
+    const d = DATA.find(r=>r._id===id);
+    document.getElementById('f-clube').value  = d.Clube;
+    document.getElementById('f-ano').value    = d.Ano;
+    document.getElementById('f-posicao').value= d.Posicao;
+    document.getElementById('f-pontos').value = d.Pontos;
+    document.getElementById('f-receita').value= d.Receita_Total_Mi||'';
+    document.getElementById('f-folha').value  = d.Folha_Salarial_Mi||'';
+    document.getElementById('f-mercado').value= d.Valor_Mercado_Mi||'';
+    document.getElementById('f-transf').value = d.Gastos_Transferencias_Mi||'';
+    document.getElementById('f-saf').value    = d.SAF;
+  } else {
+    ['f-clube','f-posicao','f-pontos','f-receita','f-folha','f-mercado','f-transf'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('f-saf').value = 'Não';
+  }
+  document.getElementById('modal-crud').classList.add('open');
+}
+function closeModal() { document.getElementById('modal-crud').classList.remove('open'); }
+function saveRecord() {
+  const rec = {
+    Clube: document.getElementById('f-clube').value.trim(),
+    Ano: +document.getElementById('f-ano').value,
+    Posicao: +document.getElementById('f-posicao').value,
+    Pontos: +document.getElementById('f-pontos').value,
+    Receita_Total_Mi: document.getElementById('f-receita').value ? +document.getElementById('f-receita').value : null,
+    Folha_Salarial_Mi: document.getElementById('f-folha').value ? +document.getElementById('f-folha').value : null,
+    Valor_Mercado_Mi: document.getElementById('f-mercado').value ? +document.getElementById('f-mercado').value : null,
+    Gastos_Transferencias_Mi: document.getElementById('f-transf').value ? +document.getElementById('f-transf').value : null,
+    SAF: document.getElementById('f-saf').value,
+  };
+  if (!rec.Clube||!rec.Pontos) { showAlert('Preencha clube e pontos.','error'); return; }
+  if (editingId == null) {
+    rec._id = nextId++;
+    DATA.push(rec);
+    addLog('create', `Registro criado: ${rec.Clube} ${rec.Ano} (${rec.Pontos} pts)`);
+    showAlert(`Registro de ${rec.Clube} ${rec.Ano} criado.`, 'success');
+  } else {
+    const idx = DATA.findIndex(d=>d._id===editingId);
+    DATA[idx] = {...rec, _id: editingId};
+    addLog('update', `Registro editado: ${rec.Clube} ${rec.Ano}`);
+    showAlert(`Registro de ${rec.Clube} ${rec.Ano} atualizado.`, 'success');
+  }
+  closeModal(); renderTable();
+}
+function deleteRecord(id) {
+  const d = DATA.find(r=>r._id===id);
+  if (!confirm(`Excluir ${d.Clube} ${d.Ano}?`)) return;
+  DATA = DATA.filter(r=>r._id!==id);
+  addLog('delete', `Registro excluído: ${d.Clube} ${d.Ano}`);
+  showAlert(`Registro excluído.`, 'success');
+  renderTable();
+}
+
+// ── ANÁLISE ───────────────────────────────────────────────────────────────
+function renderAnalise() {
+  const ano = document.getElementById('analise-ano').value;
+  const saf = document.getElementById('analise-saf').value;
+  let d = DATA.filter(r => (!ano||r.Ano==ano) && (!saf||r.SAF===saf));
+
+  const safD = d.filter(r=>r.SAF==='Sim');
+  const assD = d.filter(r=>r.SAF==='Não');
+  const stat = (arr, col) => {
+    const v = arr.filter(r=>r[col]!=null).map(r=>r[col]);
+    if (!v.length) return '–';
+    return (v.reduce((s,x)=>s+x,0)/v.length).toFixed(0);
+  };
+  const statPts = arr => arr.length ? (arr.reduce((s,r)=>s+r.Pontos,0)/arr.length).toFixed(1) : '–';
+
+  const mkStats = (arr, el) => {
+    document.getElementById(el).innerHTML = [
+      ['Pontuação média', statPts(arr)+' pts'],
+      ['Receita média', 'R$'+stat(arr,'Receita_Total_Mi')+'mi'],
+      ['Folha média', 'R$'+stat(arr,'Folha_Salarial_Mi')+'mi'],
+      ['Mercado médio', 'R$'+stat(arr,'Valor_Mercado_Mi')+'mi'],
+    ].map(([l,v])=>`<div class="compare-item"><span class="compare-item-label">${l}</span><span class="compare-item-val">${v}</span></div>`).join('');
+  };
+  mkStats(safD,'saf-stats'); mkStats(assD,'assoc-stats');
+
+  const scatterCfg = (col, labelX, canvasId, color) => {
+    const v = d.filter(r=>r[col]!=null);
+    mkChart(canvasId,{type:'scatter',data:{datasets:[
+      {data:v.filter(r=>r.SAF==='Sim').map(r=>({x:r[col],y:r.Pontos,label:r.Clube})),backgroundColor:GRN+'88',pointRadius:5,label:'SAF'},
+      {data:v.filter(r=>r.SAF==='Não').map(r=>({x:r[col],y:r.Pontos,label:r.Clube})),backgroundColor:GRY+'88',pointRadius:5,label:'Assoc.'},
+    ]},options:{...baseOpts,plugins:{legend:{display:true,position:'bottom',labels:{font:{size:11},boxWidth:10}},tooltip:{callbacks:{label:ctx=>`${ctx.raw.label}: ${ctx.raw.x}mi / ${ctx.raw.y}pts`}}},scales:{x:{title:{display:true,text:labelX,font:{size:11}},grid:{color:'rgba(0,0,0,.05)'},ticks:{color:'#5F5E5A',font:{size:11}}},y:{title:{display:true,text:'Pontos',font:{size:11}},grid:{color:'rgba(0,0,0,.05)'},ticks:{color:'#5F5E5A',font:{size:11}}}}}});
+  };
+  scatterCfg('Receita_Total_Mi','Receita (R$mi)','a-scatter1',BLU);
+  scatterCfg('Valor_Mercado_Mi','Mercado (R$mi)','a-scatter2',AMB);
+  scatterCfg('Folha_Salarial_Mi','Folha (R$mi)','a-scatter3',GRN);
+  scatterCfg('Gastos_Transferencias_Mi','Transf. (R$mi)','a-scatter4',GRY);
+}
+
+// ── CLUBE (GESTOR) ────────────────────────────────────────────────────────
+function renderClube() {
+  const nome = currentUser.clube || 'Flamengo';
+  document.getElementById('clube-page-title').textContent = nome;
+  const rows = DATA.filter(d=>d.Clube===nome).sort((a,b)=>a.Ano-b.Ano);
+
+  const avgPts = rows.length?(rows.reduce((s,d)=>s+d.Pontos,0)/rows.length).toFixed(1):'–';
+  const maxPts = rows.length?Math.max(...rows.map(d=>d.Pontos)):'–';
+  const avgFolha = () => { const v=rows.filter(d=>d.Folha_Salarial_Mi!=null); return v.length?(v.reduce((s,d)=>s+d.Folha_Salarial_Mi,0)/v.length).toFixed(0):'–'; };
+  const safStatus = rows[0]?.SAF==='Sim' ? '✓ SAF' : '✗ Assoc.';
+
+  document.getElementById('clube-kpis').innerHTML = `
+    <div class="kpi-card accent"><div class="kpi-label">Pontos médios</div><div class="kpi-value">${avgPts}</div><div class="kpi-sub">2020–2024</div></div>
+    <div class="kpi-card"><div class="kpi-label">Melhor temporada</div><div class="kpi-value">${maxPts}</div><div class="kpi-sub">pontos</div></div>
+    <div class="kpi-card"><div class="kpi-label">Folha média</div><div class="kpi-value">R$${avgFolha()}mi</div><div class="kpi-sub">média do período</div></div>
+    <div class="kpi-card"><div class="kpi-label">Modelo de gestão</div><div class="kpi-value" style="font-size:18px">${safStatus}</div><div class="kpi-sub">${nome}</div></div>
+  `;
+
+  const anos = rows.map(d=>d.Ano);
+  mkChart('clube-pontos',{type:'line',data:{labels:anos,datasets:[{data:rows.map(d=>d.Pontos),borderColor:GRN,backgroundColor:GRN+'22',fill:true,tension:.4,pointRadius:5,pointBackgroundColor:GRN}]},options:{...baseOpts}});
+  mkChart('clube-financas',{type:'bar',data:{labels:anos,datasets:[
+    {label:'Receita',data:rows.map(d=>d.Receita_Total_Mi||0),backgroundColor:GRN+'99',borderRadius:4},
+    {label:'Folha',data:rows.map(d=>d.Folha_Salarial_Mi||0),backgroundColor:AMB+'99',borderRadius:4},
+  ]},options:{...baseOpts,plugins:{legend:{display:true,position:'bottom',labels:{font:{size:11},boxWidth:10}}}}});
+
+  document.getElementById('clube-table').innerHTML = rows.map(d => {
+    const f = v => v!=null?'R$'+v.toFixed(0)+'mi':'–';
+    return `<tr><td>${d.Ano}</td><td><span class="badge badge-pos">${d.Posicao}º</span></td>
+      <td style="font-weight:500;font-family:'DM Mono',monospace">${d.Pontos}</td>
+      <td>${f(d.Receita_Total_Mi)}</td><td>${f(d.Folha_Salarial_Mi)}</td>
+      <td>${f(d.Valor_Mercado_Mi)}</td><td>${f(d.Gastos_Transferencias_Mi)}</td></tr>`;
+  }).join('');
+}
+
+// ── LOGS ──────────────────────────────────────────────────────────────────
+function renderLogs() {
+  const type = document.getElementById('log-filter-type').value;
+  const user = document.getElementById('log-filter-user').value;
+  const filtered = LOGS.filter(l => (!type||l.type===type) && (!user||l.user===user));
+
+  // populate user filter
+  const users = [...new Set(LOGS.map(l=>l.user))];
+  const uSel = document.getElementById('log-filter-user');
+  const cur = uSel.value;
+  uSel.innerHTML = '<option value="">Todos os usuários</option>' + users.map(u=>`<option>${u}</option>`).join('');
+  uSel.value = cur;
+
+  if (!filtered.length) {
+    document.getElementById('log-list').innerHTML = '<p style="color:var(--text-2);font-size:13px">Nenhum log registrado.</p>';
+    return;
+  }
+  document.getElementById('log-list').innerHTML = filtered.map(l=>`
+    <div class="log-entry">
+      <div class="log-dot ${l.type}"></div>
+      <div>
+        <div class="log-time">${l.time}</div>
+        <div class="log-msg">${l.msg}</div>
+        <div class="log-user">${l.user}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ── ADMIN ──────────────────────────────────────────────────────────────────
+function renderAdmin() {
+  document.getElementById('users-table-body').innerHTML = USERS.map(u=>`
+    <tr>
+      <td style="font-weight:500">${u.nome}</td>
+      <td style="font-size:12px;color:var(--text-2)">${u.email}</td>
+      <td><span class="badge ${u.role==='admin'?'badge-saf':u.role==='consultor'?'':''}" style="${u.role==='consultor'?'background:var(--blue-l);color:var(--blue)':u.role==='gestor'?'background:var(--amber-l);color:var(--amber)':''}">${u.role}</span></td>
+      <td style="font-size:12px">${u.clube||'–'}</td>
+      <td><button class="btn-sm danger" onclick="deleteUser(${u.id})">Remover</button></td>
+    </tr>`).join('');
+
+  document.getElementById('stat-records').textContent = DATA.length;
+  document.getElementById('stat-clubes').textContent  = new Set(DATA.map(d=>d.Clube)).size;
+  document.getElementById('stat-anos').textContent    = new Set(DATA.map(d=>d.Ano)).size;
+  document.getElementById('stat-saf').textContent     = DATA.filter(d=>d.SAF==='Sim').length;
+  document.getElementById('stat-logs').textContent    = LOGS.length;
+  document.getElementById('stat-users').textContent   = USERS.length;
+}
+function openUserModal()  { document.getElementById('modal-user').classList.add('open'); }
+function closeUserModal() { document.getElementById('modal-user').classList.remove('open'); }
+function saveUser() {
+  const nome  = document.getElementById('u-nome').value.trim();
+  const email = document.getElementById('u-email').value.trim();
+  const senha = document.getElementById('u-senha').value.trim();
+  const role  = document.getElementById('u-role').value;
+  const clube = document.getElementById('u-clube').value.trim();
+  if (!nome||!email||!senha) { showAlert('Preencha nome, email e senha.','error'); return; }
+  if (USERS.find(u=>u.email===email)) { showAlert('Email já cadastrado.','error'); return; }
+  const newId = Math.max(...USERS.map(u=>u.id))+1;
+  USERS.push({id:newId, nome, email, senha, role, clube});
+  addLog('create', `Usuário criado: ${nome} (${role})`);
+  showAlert(`Usuário ${nome} criado.`, 'success');
+  closeUserModal(); renderAdmin();
+}
+function deleteUser(id) {
+  if (id===currentUser?.id) { showAlert('Não é possível remover o próprio usuário.','error'); return; }
+  const u = USERS.find(x=>x.id===id);
+  if (!confirm(`Remover ${u.nome}?`)) return;
+  USERS = USERS.filter(x=>x.id!==id);
+  addLog('delete', `Usuário removido: ${u.nome}`);
+  showAlert('Usuário removido.','success');
+  renderAdmin();
+}
+function loadStreamlit() {
+  const url = document.getElementById('streamlit-url').value.trim();
+  if (!url) { showAlert('Cole a URL do Streamlit primeiro.','error'); return; }
+  const frame = document.getElementById('streamlit-frame');
+  const placeholder = document.getElementById('embed-placeholder');
+  document.getElementById('embed-url-label').textContent = url.replace(/^https?:\/\//,'') + ' · dashboard_futebol.py';
+  frame.src = url;
+  frame.style.display = 'block';
+  placeholder.style.display = 'none';
+  frame.onerror = () => showAlert('Não foi possível carregar o Streamlit. Verifique se está rodando e com CORS desabilitado.','error');
+  addLog('login', `Dashboard Streamlit carregado: ${url}`);
+  showAlert('Streamlit carregado! Se ficar em branco, rode com --server.enableCORS false','success');
+}
+function unloadStreamlit() {
+  const frame = document.getElementById('streamlit-frame');
+  const placeholder = document.getElementById('embed-placeholder');
+  frame.src = ''; frame.style.display = 'none';
+  placeholder.style.display = 'flex';
+  document.getElementById('embed-url-label').textContent = 'aguardando URL · dashboard_futebol.py';
+  document.getElementById('streamlit-url').value = '';
+}
+
+// ── EFETIVIDADE ────────────────────────────────────────────────────────────
+function renderEfetividade() {
+  const ano    = document.getElementById('ef-ano')?.value || '';
+  const met    = document.getElementById('ef-metrica')?.value || 'Folha_Salarial_Mi';
+  const saf    = document.getElementById('ef-saf')?.value || '';
+  const metLabel = {Folha_Salarial_Mi:'Folha Salarial',Receita_Total_Mi:'Receita Total',Gastos_Transferencias_Mi:'Gastos Transf.'}[met];
+
+  let base = DATA.filter(d => d[met] != null && d.Pontos > 0);
+  if (ano) base = base.filter(d => d.Ano == ano);
+  if (saf) base = base.filter(d => d.SAF === saf);
+
+  // Custo por ponto = métrica / pontos
+  const rows = base.map(d => ({
+    ...d,
+    custopp: +(d[met] / d.Pontos).toFixed(3),
+    efLabel: d[met]/d.Pontos < 2 ? 'Excelente' : d[met]/d.Pontos < 4 ? 'Boa' : d[met]/d.Pontos < 7 ? 'Moderada' : 'Baixa'
+  })).sort((a,b) => a.custopp - b.custopp);
+
+  if (!rows.length) {
+    document.getElementById('ef-kpis').innerHTML = '<p style="color:var(--text-2)">Sem dados com filtros selecionados.</p>';
+    return;
+  }
+
+  // KPIs
+  const avg  = rows.reduce((s,r)=>s+r.custopp,0)/rows.length;
+  const best = rows[0];
+  const worst= rows[rows.length-1];
+  const safAvg  = rows.filter(r=>r.SAF==='Sim');
+  const assocAvg= rows.filter(r=>r.SAF==='Não');
+  const safd = safAvg.length  ? (safAvg.reduce((s,r)=>s+r.custopp,0)/safAvg.length).toFixed(2)   : '–';
+  const assd = assocAvg.length? (assocAvg.reduce((s,r)=>s+r.custopp,0)/assocAvg.length).toFixed(2): '–';
+
+  document.getElementById('ef-kpis').innerHTML = `
+    <div class="kpi-card accent"><div class="kpi-label">Média geral</div><div class="kpi-value">R$${avg.toFixed(2)}mi</div><div class="kpi-sub">por ponto conquistado</div></div>
+    <div class="kpi-card"><div class="kpi-label">Mais eficiente</div><div class="kpi-value" style="font-size:16px">${best.Clube}</div><div class="kpi-sub">R$${best.custopp}mi/pt · ${best.Ano}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Menos eficiente</div><div class="kpi-value" style="font-size:16px">${worst.Clube}</div><div class="kpi-sub">R$${worst.custopp}mi/pt · ${worst.Ano}</div></div>
+    <div class="kpi-card"><div class="kpi-label">SAF vs. Assoc.</div><div class="kpi-value" style="font-size:18px">R$${safd}mi</div><div class="kpi-sub">SAF · R$${assd}mi Assoc.</div></div>
+  `;
+
+  document.getElementById('ef-bar-title').textContent = `Custo por ponto — ${metLabel} (R$mi/pt)`;
+
+  // Bar chart top 15 mais eficientes
+  const top = rows.slice(0, Math.min(15, rows.length));
+  mkChart('ef-bar', {
+    type: 'bar',
+    data: {
+      labels: top.map(r => `${r.Clube} '${String(r.Ano).slice(2)}`),
+      datasets: [{
+        data: top.map(r => r.custopp),
+        backgroundColor: top.map(r => r.SAF==='Sim' ? GRN+'cc' : GRY+'cc'),
+        borderRadius: 5,
+      }]
+    },
+    options: { ...baseOpts, indexAxis: 'y',
+      plugins: { legend:{display:false}, tooltip:{callbacks:{label:ctx=>`R$${ctx.raw}mi por ponto · ${top[ctx.dataIndex].efLabel}`}} },
+      scales: { x:{title:{display:true,text:'R$ mi por ponto',font:{size:10}},grid:{color:'rgba(0,0,0,.05)'},ticks:{color:'#5F5E5A',font:{size:10}}},
+                y:{grid:{display:false},ticks:{color:'#5F5E5A',font:{size:10}}} }
+    }
+  });
+
+  // Overlap chart: % clubes top10 na métrica que também são top10 no campeonato, por ano
+  const anos = [2020,2021,2022,2023,2024];
+  const overlapData = anos.map(a => {
+    const byYear = DATA.filter(d => d.Ano === a && d[met] != null && d.Pontos != null);
+    if (byYear.length < 2) return null;
+    // top10 pela métrica (maior valor)
+    const sortedByMet = [...byYear].sort((a,b) => b[met] - a[met]);
+    const top10Met = new Set(sortedByMet.slice(0,10).map(d=>d.Clube));
+    // top10 pelo campeonato (menor posição = melhor)
+    const sortedByPos = [...byYear].sort((a,b) => a.Posicao - b.Posicao);
+    const top10Camp = new Set(sortedByPos.slice(0,10).map(d=>d.Clube));
+    const overlap = [...top10Met].filter(c => top10Camp.has(c)).length;
+    return +(overlap / 10 * 100).toFixed(1);
+  });
+  const overlapLabel = {Folha_Salarial_Mi:'Folha Salarial',Receita_Total_Mi:'Receita Total',Gastos_Transferencias_Mi:'Gastos Transf.'}[met];
+  document.getElementById('ef-overlap-title').textContent = `% Top 10 em ${overlapLabel} que também são Top 10 no campeonato`;
+  mkChart('ef-overlap', {
+    type: 'bar',
+    data: {
+      labels: anos.map(String),
+      datasets: [{
+        label: '% sobreposição',
+        data: overlapData,
+        backgroundColor: overlapData.map(v => v === null ? GRY+'44' : v >= 70 ? GRN+'cc' : v >= 50 ? AMB+'cc' : GRY+'cc'),
+        borderColor:     overlapData.map(v => v === null ? GRY : v >= 70 ? GRN : v >= 50 ? AMB : GRY),
+        borderWidth: 1.5,
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      ...baseOpts,
+      plugins: {
+        legend: {display:false},
+        tooltip: { callbacks: { label: ctx => ctx.raw !== null ? `${ctx.raw}% dos clubes top 10 em ${overlapLabel} estão no top 10 do campeonato` : 'Sem dados' } }
+      },
+      scales: {
+        x: { grid:{color:'rgba(0,0,0,.05)'}, ticks:{color:'#5F5E5A',font:{size:11}} },
+        y: { min:0, max:100, title:{display:true,text:'% de sobreposição',font:{size:10}}, grid:{color:'rgba(0,0,0,.05)'}, ticks:{color:'#5F5E5A',font:{size:11},callback:v=>v+'%'} }
+      }
+    }
+  });
+
+  // Tabela completa
+  const efColor = ef => ({Excelente:'background:var(--green-l);color:var(--green-d)',Boa:'background:var(--blue-l);color:var(--blue)',Moderada:'background:var(--amber-l);color:var(--amber)',Baixa:'background:var(--danger-l);color:var(--danger)'}[ef]||'');
+  document.getElementById('ef-table').innerHTML = rows.map((r,i) => `
+    <tr>
+      <td style="font-family:'DM Mono',monospace;color:var(--text-2)">${i+1}</td>
+      <td style="font-weight:500">${r.Clube}</td>
+      <td>${r.Ano}</td>
+      <td style="font-family:'DM Mono',monospace">${r.Pontos}</td>
+      <td style="font-family:'DM Mono',monospace">R$${r[met].toFixed(0)}mi</td>
+      <td style="font-family:'DM Mono',monospace;font-weight:500;color:var(--green-d)">R$${r.custopp}mi</td>
+      <td><span class="badge" style="${efColor(r.efLabel)}">${r.efLabel}</span></td>
+      <td><span class="badge ${r.SAF==='Sim'?'badge-saf':'badge-nassoc'}">${r.SAF==='Sim'?'SAF':'Assoc.'}</span></td>
+    </tr>`).join('');
+}
+
+// ── RELATÓRIO ──────────────────────────────────────────────────────────────
+function renderRelatorio() {
+  const nome = currentUser?.clube || 'Flamengo';
+  document.getElementById('rel-title').textContent = `Relatório — ${nome}`;
+  const rows = DATA.filter(d=>d.Clube===nome).sort((a,b)=>a.Ano-b.Ano);
+  if (!rows.length) { document.getElementById('relatorio-content').innerHTML='<p style="color:var(--text-2)">Sem dados para este clube.</p>'; return; }
+
+  const f  = v => v!=null ? `R$${v.toFixed(0)}mi` : '–';
+  const fp = v => v!=null ? `R$${v.toFixed(2)}mi/pt` : '–';
+  const avg = (arr, key) => { const v=arr.filter(d=>d[key]!=null); return v.length?(v.reduce((s,d)=>s+d[key],0)/v.length):null; };
+  const avgPts   = (rows.reduce((s,d)=>s+d.Pontos,0)/rows.length).toFixed(1);
+  const bestRow  = rows.reduce((a,b)=>a.Pontos>b.Pontos?a:b);
+  const worstRow = rows.reduce((a,b)=>a.Pontos<b.Pontos?a:b);
+  const avgFolha = avg(rows,'Folha_Salarial_Mi');
+  const avgRec   = avg(rows,'Receita_Total_Mi');
+  const avgMerc  = avg(rows,'Valor_Mercado_Mi');
+  const safStatus= rows[0]?.SAF==='Sim';
+  const custoRows= rows.filter(d=>d.Folha_Salarial_Mi&&d.Pontos>0).map(d=>({...d, cpp: d.Folha_Salarial_Mi/d.Pontos}));
+  const avgCpp   = custoRows.length?(custoRows.reduce((s,r)=>s+r.cpp,0)/custoRows.length):null;
+  const now      = new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+
+  document.getElementById('relatorio-content').innerHTML = `
+  <div id="rel-print-area" style="font-family:'DM Sans',sans-serif;color:var(--text)">
+
+    <!-- Cabeçalho do relatório -->
+    <div style="background:var(--green-d);border-radius:var(--r-lg);padding:28px 32px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="color:var(--green-m);font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">Relatório Executivo</div>
+        <div style="color:#fff;font-family:'Syne',sans-serif;font-size:24px;font-weight:700">${nome}</div>
+        <div style="color:rgba(255,255,255,.5);font-size:12px;margin-top:4px">Campeonato Brasileiro Série A · 2020–2024</div>
+      </div>
+      <div style="text-align:right">
+        <div style="color:rgba(255,255,255,.4);font-size:11px">Gerado em</div>
+        <div style="color:#fff;font-family:'DM Mono',monospace;font-size:13px">${now}</div>
+        <div style="margin-top:8px"><span style="background:${safStatus?'var(--green)':'rgba(255,255,255,.15)'};color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:500">${safStatus?'SAF':'Associação Civil'}</span></div>
+      </div>
+    </div>
+
+    <!-- KPIs resumo -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
+      ${[
+        ['Pontos médios', avgPts+' pts', '2020–2024'],
+        ['Melhor temporada', bestRow.Pontos+' pts', bestRow.Ano+'  · '+bestRow.Posicao+'º lugar'],
+        ['Pior temporada', worstRow.Pontos+' pts', worstRow.Ano+' · '+worstRow.Posicao+'º lugar'],
+        ['Custo médio/ponto', avgCpp?'R$'+avgCpp.toFixed(2)+'mi':'–', 'folha salarial'],
+      ].map(([l,v,s])=>`<div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px">
+        <div style="font-size:11px;font-weight:500;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">${l}</div>
+        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--green-d)">${v}</div>
+        <div style="font-size:11px;color:var(--text-2);margin-top:3px">${s}</div>
+      </div>`).join('')}
+    </div>
+
+    <!-- Médias financeiras -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px 24px;margin-bottom:20px">
+      <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:14px">Médias financeiras do período</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+        ${[['Receita total',f(avgRec)],['Folha salarial',f(avgFolha)],['Valor de mercado',f(avgMerc)]].map(([l,v])=>`
+          <div style="border-left:3px solid var(--green);padding-left:14px">
+            <div style="font-size:11px;color:var(--text-2);margin-bottom:4px">${l}</div>
+            <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:500">${v}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- Tabela histórico ano a ano -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px 24px;margin-bottom:20px">
+      <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:14px">Histórico ano a ano</div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead><tr>${['Ano','Pos.','Pontos','Receita','Folha','Mercado','Transf.','Custo/Pt'].map(h=>`<th style="text-align:left;padding:8px 10px;font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:var(--text-2);border-bottom:1px solid var(--border)">${h}</th>`).join('')}</tr></thead>
+        <tbody>${rows.map(d=>{
+          const cpp = d.Folha_Salarial_Mi&&d.Pontos?fp(d.Folha_Salarial_Mi/d.Pontos):'–';
+          return `<tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:9px 10px;font-family:'DM Mono',monospace">${d.Ano}</td>
+            <td style="padding:9px 10px"><span style="background:var(--amber-l);color:var(--amber);padding:2px 8px;border-radius:12px;font-size:11px;font-weight:500">${d.Posicao}º</span></td>
+            <td style="padding:9px 10px;font-weight:700;font-family:'DM Mono',monospace;color:var(--green-d)">${d.Pontos}</td>
+            <td style="padding:9px 10px">${f(d.Receita_Total_Mi)}</td>
+            <td style="padding:9px 10px">${f(d.Folha_Salarial_Mi)}</td>
+            <td style="padding:9px 10px">${f(d.Valor_Mercado_Mi)}</td>
+            <td style="padding:9px 10px">${f(d.Gastos_Transferencias_Mi)}</td>
+            <td style="padding:9px 10px;font-family:'DM Mono',monospace;font-size:12px;color:var(--green-d)">${cpp}</td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>
+    </div>
+
+    <!-- Análise textual -->
+    <div style="background:var(--green-l);border:1px solid var(--green-m);border-radius:var(--r-lg);padding:20px 24px;margin-bottom:20px">
+      <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--green-d);margin-bottom:10px">Análise executiva</div>
+      <p style="font-size:13px;color:var(--green-d);line-height:1.7">
+        O ${nome} apresentou uma média de <strong>${avgPts} pontos</strong> no Campeonato Brasileiro entre 2020 e 2024.
+        A melhor performance registrada foi em <strong>${bestRow.Ano}</strong>, com ${bestRow.Pontos} pontos e ${bestRow.Posicao}º lugar na tabela.
+        ${avgCpp ? `O custo médio por ponto conquistado, considerando a folha salarial, foi de <strong>R$${avgCpp.toFixed(2)}mi por ponto</strong>.` : ''}
+        O clube opera como <strong>${safStatus?'Sociedade Anônima do Futebol (SAF)':'Associação Civil'}</strong>.
+        ${avgFolha ? `A folha salarial média no período foi de <strong>${f(avgFolha)}</strong>, representando um dos principais indicadores de capacidade competitiva.` : ''}
+      </p>
+    </div>
+
+    <div style="text-align:center;font-size:11px;color:var(--text-2);padding:12px 0">
+      SoccerFinance · Relatório gerado em ${now}
+    </div>
+  </div>`;
+  addLog('create', `Relatório gerado: ${nome}`);
+}
+function printRelatorio() {
+  const content = document.getElementById('rel-print-area');
+  if (!content) { showAlert('Gere o relatório primeiro.','error'); return; }
+  const w = window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatório ${currentUser?.clube||''}</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'DM Sans',sans-serif;color:#2C2C2A;background:#fff;padding:32px}
+    :root{--green:#1D9E75;--green-d:#085041;--green-l:#E1F5EE;--green-m:#9FE1CB;--text:#2C2C2A;--text-2:#5F5E5A;--border:#E8E6DF;--card:#fff;--amber:#BA7517;--amber-l:#FAEEDA;--r:8px;--r-lg:14px}
+  </style></head><body>${content.outerHTML}
+  <script>window.onload=()=>{window.print();}<\/script></body></html>`);
+  w.document.close();
+  addLog('create', `Relatório impresso: ${currentUser?.clube||''}`);
+}
+
+// ── GLOBAL ALERT ──────────────────────────────────────────────────────────
+function showAlert(msg, type) {
+  const el = document.getElementById('alert-global');
+  el.textContent = msg;
+  el.className = `alert ${type} show`;
+  setTimeout(()=>el.classList.remove('show'), 3200);
+}
+
+// ── LOGIN KEY ─────────────────────────────────────────────────────────────
+document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key==='Enter') doLogin(); });
+</script>
+</body>
+</html>
